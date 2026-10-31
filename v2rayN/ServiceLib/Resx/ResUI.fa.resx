@@ -1943,4 +1943,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_about" xml:space="preserve">
     <value>درباره</value>
   </data>
+  <data name="saila_auto_routing" xml:space="preserve">
+    <value>مسیریابی خودکار</value>
+  </data>
+  <data name="saila_auto_routing_summary" xml:space="preserve">
+    <value>مسیریابی را از روی کشور شما انتخاب می‌کند (ایران: سایت‌های ایرانی مستقیم)</value>
+  </data>
+  <data name="saila_auto_routing_country" xml:space="preserve">
+    <value>مسیریابی: {0} (خودکار)</value>
+  </data>
 </root>

@@ -106,6 +106,8 @@ public class UIItem
     public bool HideColumnIpInfo { get; set; }
     public string? SailaLook { get; set; } = "Nexus";
     public string? SailaAccent { get; set; } = "#7AB0FF";
+    public bool SailaAutoRouting { get; set; } = true;
+    public string? SailaRoutingCountry { get; set; }
 }
 
 [Serializable]

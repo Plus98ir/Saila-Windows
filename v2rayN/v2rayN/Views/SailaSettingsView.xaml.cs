@@ -79,6 +79,10 @@ public partial class SailaSettingsView : UserControl
             }
         }
 
+        // Auto routing
+        togAutoRouting.IsChecked = _config.UiItem.SailaAutoRouting;
+        UpdateAutoRoutingStatus();
+
         // Auto Run
         togAutoRun.IsChecked = _config.GuiItem.AutoRun;
 
@@ -176,6 +180,36 @@ public partial class SailaSettingsView : UserControl
             StatusBarViewModel.Instance.SelectedRouting = item;
             await ConfigHandler.SetDefaultRouting(_config, item);
         }
+    }
+
+    private void UpdateAutoRoutingStatus()
+    {
+        var country = SailaAutoRouting.CountryName(_config);
+        txtAutoRoutingStatus.Text = _config.UiItem.SailaAutoRouting && country != null
+            ? string.Format(ResUI.saila_auto_routing_country, country)
+            : ResUI.saila_auto_routing_summary;
+    }
+
+    private async void TogAutoRouting_Click(object sender, RoutedEventArgs e)
+    {
+        bool on = togAutoRouting.IsChecked == true;
+        _config.UiItem.SailaAutoRouting = on;
+        // Forget the last country so turning it on re-applies the routing now.
+        _config.UiItem.SailaRoutingCountry = null;
+        await ConfigHandler.SaveConfig(_config);
+        UpdateAutoRoutingStatus();
+        if (!on)
+        {
+            return;
+        }
+
+        var target = await SailaAutoRouting.PickAsync(_config);
+        if (target != null && cmbRouting.ItemsSource is IEnumerable<RoutingItem> routings)
+        {
+            // Selecting it in the combo goes through CmbRouting_SelectionChanged, which activates and reloads.
+            cmbRouting.SelectedItem = routings.FirstOrDefault(t => t.Id == target.Id);
+        }
+        UpdateAutoRoutingStatus();
     }
 
     private async void TogAutoRun_Click(object sender, RoutedEventArgs e)
@@ -445,6 +479,8 @@ public partial class SailaSettingsView : UserControl
         txtModeLabel.Foreground = textPrimary;
         txtRoutingLabel.Foreground = textPrimary;
         txtAutoRunLabel.Foreground = textPrimary;
+        txtAutoRoutingLabel.Foreground = textPrimary;
+        txtAutoRoutingStatus.Foreground = textSecondary;
         txtLocalPortLabel.Foreground = textPrimary;
 
         txtLookTitle.Foreground = textSecondary;
@@ -478,6 +514,7 @@ public partial class SailaSettingsView : UserControl
 
         sep1.Background = sepBrush;
         sep2.Background = sepBrush;
+        sepAutoRouting.Background = sepBrush;
         sep3.Background = sepBrush;
         sep4.Background = sepBrush;
         sep5.Background = sepBrush;

@@ -122,6 +122,25 @@
 
                     <Separator x:Name="sep1" Background="#20FFFFFF" Margin="0,0,0,12" />
 
+                    <!-- Auto routing (Saila): routing from the user's country -->
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtAutoRoutingLabel" Text="{x:Static resx:ResUI.saila_auto_routing}" FontSize="13" Foreground="#FFFFFF" />
+                            <TextBlock x:Name="txtAutoRoutingStatus" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,2,8,0" />
+                        </StackPanel>
+                        <ToggleButton
+                            Grid.Column="1"
+                            x:Name="togAutoRouting"
+                            Cursor="Hand"
+                            Click="TogAutoRouting_Click" />
+                    </Grid>
+
+                    <Separator x:Name="sepAutoRouting" Background="#20FFFFFF" Margin="0,0,0,12" />
+
                     <!-- Routing -->
                     <Grid Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>

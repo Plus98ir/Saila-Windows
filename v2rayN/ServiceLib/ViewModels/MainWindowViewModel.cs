@@ -345,6 +345,16 @@ public partial class MainWindowViewModel : MyReactiveObject
         await RefreshServersDispatcherAsync();
 
         await Reload();
+
+        // Saila: routing from the user's country, in the background so startup isn't held up by the lookup.
+        _ = Task.Run(async () =>
+        {
+            if (await SailaAutoRouting.CheckAsync(_config))
+            {
+                RxSchedulers.MainThreadScheduler.Schedule(async () => await StatusBarViewModel.RefreshRoutingsMenu());
+                await Reload();
+            }
+        });
     }
 
     #endregion Init

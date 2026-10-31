@@ -5619,6 +5619,24 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("saila_mode_tun", resourceCulture) ?? "saila_mode_tun";
             }
         }
+        public static string saila_auto_routing {
+            get {
+                return ResourceManager.GetString("saila_auto_routing", resourceCulture) ?? "saila_auto_routing";
+            }
+        }
+
+        public static string saila_auto_routing_summary {
+            get {
+                return ResourceManager.GetString("saila_auto_routing_summary", resourceCulture) ?? "saila_auto_routing_summary";
+            }
+        }
+
+        public static string saila_auto_routing_country {
+            get {
+                return ResourceManager.GetString("saila_auto_routing_country", resourceCulture) ?? "saila_auto_routing_country";
+            }
+        }
+
         public static string saila_settings_routing {
             get {
                 return ResourceManager.GetString("saila_settings_routing", resourceCulture) ?? "saila_settings_routing";
