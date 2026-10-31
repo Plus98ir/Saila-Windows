@@ -20,6 +20,8 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -83,6 +85,35 @@
                 Margin="{StaticResource Margin8}"
                 DisplayMemberPath="Display"
                 SelectedValuePath="Value"
+                Style="{StaticResource DefComboBox}" />
+
+            <TextBlock
+                Grid.Row="5"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Style="{StaticResource ToolbarTextBlock}"
+                Text="{x:Static resx:ResUI.saila_theme_style}" />
+            <ComboBox
+                x:Name="cmbSailaLook"
+                Grid.Row="5"
+                Grid.Column="1"
+                Width="120"
+                Margin="{StaticResource Margin8}"
+                Style="{StaticResource DefComboBox}" />
+
+            <TextBlock
+                Grid.Row="6"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Style="{StaticResource ToolbarTextBlock}"
+                Text="{x:Static resx:ResUI.saila_accent_color}" />
+            <ComboBox
+                x:Name="cmbSailaAccent"
+                Grid.Row="6"
+                Grid.Column="1"
+                Width="120"
+                Margin="{StaticResource Margin8}"
+                DisplayMemberPath="Text"
                 Style="{StaticResource DefComboBox}" />
         </Grid>
     </StackPanel>

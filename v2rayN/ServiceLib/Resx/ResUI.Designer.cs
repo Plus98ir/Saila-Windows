@@ -5417,5 +5417,136 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("UpgradeAppNotExistTip", resourceCulture);
             }
         }
+
+        public static string saila_status_connection {
+            get {
+                return ResourceManager.GetString("saila_status_connection", resourceCulture) ?? "saila_status_connection";
+            }
+        }
+        public static string saila_connected {
+            get {
+                return ResourceManager.GetString("saila_connected", resourceCulture) ?? "saila_connected";
+            }
+        }
+        public static string saila_not_connected {
+            get {
+                return ResourceManager.GetString("saila_not_connected", resourceCulture) ?? "saila_not_connected";
+            }
+        }
+        public static string saila_checking {
+            get {
+                return ResourceManager.GetString("saila_checking", resourceCulture) ?? "saila_checking";
+            }
+        }
+        public static string saila_current_server {
+            get {
+                return ResourceManager.GetString("saila_current_server", resourceCulture) ?? "saila_current_server";
+            }
+        }
+        public static string saila_no_server {
+            get {
+                return ResourceManager.GetString("saila_no_server", resourceCulture) ?? "saila_no_server";
+            }
+        }
+        public static string saila_add_first {
+            get {
+                return ResourceManager.GetString("saila_add_first", resourceCulture) ?? "saila_add_first";
+            }
+        }
+        public static string saila_servers {
+            get {
+                return ResourceManager.GetString("saila_servers", resourceCulture) ?? "saila_servers";
+            }
+        }
+        public static string saila_upload {
+            get {
+                return ResourceManager.GetString("saila_upload", resourceCulture) ?? "saila_upload";
+            }
+        }
+        public static string saila_download {
+            get {
+                return ResourceManager.GetString("saila_download", resourceCulture) ?? "saila_download";
+            }
+        }
+        public static string saila_session_usage {
+            get {
+                return ResourceManager.GetString("saila_session_usage", resourceCulture) ?? "saila_session_usage";
+            }
+        }
+        public static string saila_remaining_traffic {
+            get {
+                return ResourceManager.GetString("saila_remaining_traffic", resourceCulture) ?? "saila_remaining_traffic";
+            }
+        }
+        public static string saila_days_left {
+            get {
+                return ResourceManager.GetString("saila_days_left", resourceCulture) ?? "saila_days_left";
+            }
+        }
+        public static string saila_unlimited {
+            get {
+                return ResourceManager.GetString("saila_unlimited", resourceCulture) ?? "saila_unlimited";
+            }
+        }
+        public static string saila_expired {
+            get {
+                return ResourceManager.GetString("saila_expired", resourceCulture) ?? "saila_expired";
+            }
+        }
+        public static string saila_add {
+            get {
+                return ResourceManager.GetString("saila_add", resourceCulture) ?? "saila_add";
+            }
+        }
+        public static string saila_connect {
+            get {
+                return ResourceManager.GetString("saila_connect", resourceCulture) ?? "saila_connect";
+            }
+        }
+        public static string saila_disconnect {
+            get {
+                return ResourceManager.GetString("saila_disconnect", resourceCulture) ?? "saila_disconnect";
+            }
+        }
+        public static string saila_home {
+            get {
+                return ResourceManager.GetString("saila_home", resourceCulture) ?? "saila_home";
+            }
+        }
+        public static string saila_advanced {
+            get {
+                return ResourceManager.GetString("saila_advanced", resourceCulture) ?? "saila_advanced";
+            }
+        }
+        public static string saila_theme_style {
+            get {
+                return ResourceManager.GetString("saila_theme_style", resourceCulture) ?? "saila_theme_style";
+            }
+        }
+        public static string saila_style_glass {
+            get {
+                return ResourceManager.GetString("saila_style_glass", resourceCulture) ?? "saila_style_glass";
+            }
+        }
+        public static string saila_style_nexus {
+            get {
+                return ResourceManager.GetString("saila_style_nexus", resourceCulture) ?? "saila_style_nexus";
+            }
+        }
+        public static string saila_style_black {
+            get {
+                return ResourceManager.GetString("saila_style_black", resourceCulture) ?? "saila_style_black";
+            }
+        }
+        public static string saila_style_white {
+            get {
+                return ResourceManager.GetString("saila_style_white", resourceCulture) ?? "saila_style_white";
+            }
+        }
+        public static string saila_accent_color {
+            get {
+                return ResourceManager.GetString("saila_accent_color", resourceCulture) ?? "saila_accent_color";
+            }
+        }
     }
 }

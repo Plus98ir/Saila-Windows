@@ -104,6 +104,8 @@ public class UIItem
     public List<ColumnItem> MainColumnItem { get; set; }
     public List<WindowSizeItem> WindowSizeItem { get; set; }
     public bool HideColumnIpInfo { get; set; }
+    public string? SailaLook { get; set; } = "Nexus";
+    public string? SailaAccent { get; set; } = "#7AB0FF";
 }
 
 [Serializable]
@@ -301,3 +303,4 @@ public class HappyEyeballs4RayItem
     public int? Interleave { get; set; }
     public int? MaxConcurrentTry { get; set; }
 }
+

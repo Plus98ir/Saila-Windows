@@ -1773,4 +1773,83 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="menuNewUpdate" xml:space="preserve">
     <value>New Update</value>
   </data>
+
+  <data name="saila_status_connection" xml:space="preserve">
+    <value>وضعیت اتصال</value>
+  </data>
+  <data name="saila_connected" xml:space="preserve">
+    <value>متصل</value>
+  </data>
+  <data name="saila_not_connected" xml:space="preserve">
+    <value>قطع</value>
+  </data>
+  <data name="saila_checking" xml:space="preserve">
+    <value>در حال بررسی…</value>
+  </data>
+  <data name="saila_current_server" xml:space="preserve">
+    <value>سرور فعلی</value>
+  </data>
+  <data name="saila_no_server" xml:space="preserve">
+    <value>هنوز سروری ندارید</value>
+  </data>
+  <data name="saila_add_first" xml:space="preserve">
+    <value>لینک اشتراک خود را با دکمه‌ی + اضافه کنید</value>
+  </data>
+  <data name="saila_servers" xml:space="preserve">
+    <value>سرورها</value>
+  </data>
+  <data name="saila_upload" xml:space="preserve">
+    <value>آپلود</value>
+  </data>
+  <data name="saila_download" xml:space="preserve">
+    <value>دانلود</value>
+  </data>
+  <data name="saila_session_usage" xml:space="preserve">
+    <value>این اتصال</value>
+  </data>
+  <data name="saila_remaining_traffic" xml:space="preserve">
+    <value>حجم باقی‌مانده</value>
+  </data>
+  <data name="saila_days_left" xml:space="preserve">
+    <value>روز باقی‌مانده</value>
+  </data>
+  <data name="saila_unlimited" xml:space="preserve">
+    <value>نامحدود</value>
+  </data>
+  <data name="saila_expired" xml:space="preserve">
+    <value>منقضی شده</value>
+  </data>
+  <data name="saila_add" xml:space="preserve">
+    <value>افزودن</value>
+  </data>
+  <data name="saila_connect" xml:space="preserve">
+    <value>اتصال</value>
+  </data>
+  <data name="saila_disconnect" xml:space="preserve">
+    <value>قطع اتصال</value>
+  </data>
+  <data name="saila_home" xml:space="preserve">
+    <value>خانه</value>
+  </data>
+  <data name="saila_advanced" xml:space="preserve">
+    <value>پیشرفته</value>
+  </data>
+  <data name="saila_theme_style" xml:space="preserve">
+    <value>ظاهر</value>
+  </data>
+  <data name="saila_style_glass" xml:space="preserve">
+    <value>شیشه‌ای</value>
+  </data>
+  <data name="saila_style_nexus" xml:space="preserve">
+    <value>Nexus</value>
+  </data>
+  <data name="saila_style_black" xml:space="preserve">
+    <value>مشکی</value>
+  </data>
+  <data name="saila_style_white" xml:space="preserve">
+    <value>سفید</value>
+  </data>
+  <data name="saila_accent_color" xml:space="preserve">
+    <value>رنگ اصلی</value>
+  </data>
 </root>

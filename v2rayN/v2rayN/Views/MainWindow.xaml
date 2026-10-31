@@ -11,9 +11,9 @@
     xmlns:view="clr-namespace:v2rayN.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
     Title="Saila"
-    Width="1200"
-    Height="800"
-    MinWidth="800"
+    Width="520"
+    Height="820"
+    MinWidth="460"
     x:TypeArguments="vms:MainWindowViewModel"
     Icon="/Resources/v2rayN.ico"
     ResizeMode="CanResizeWithGrip"
@@ -37,7 +37,13 @@
         SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}"
         Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
         <Grid>
-            <DockPanel>
+            <!-- 1. Home View (Default content) -->
+            <Grid x:Name="panelHome" Visibility="Visible">
+                <view:SailaHomeView x:Name="sailaHomeView" />
+            </Grid>
+
+            <!-- 2. Advanced View -->
+            <DockPanel x:Name="panelAdvanced" Visibility="Collapsed">
                 <ToolBarTray DockPanel.Dock="Top">
                     <ToolBar
                         HorizontalAlignment="Center"
@@ -45,6 +51,20 @@
                         ClipToBounds="True"
                         KeyboardNavigation.TabNavigation="Continue"
                         Style="{StaticResource MaterialDesignToolBar}">
+                        <Button
+                            x:Name="btnBackToHome"
+                            Padding="{StaticResource MarginLeftRight8}"
+                            ToolTip="{x:Static resx:ResUI.saila_home}"
+                            Style="{StaticResource DefButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Margin="{StaticResource MarginRight8}"
+                                    VerticalAlignment="Center"
+                                    Kind="Home" />
+                                <TextBlock Text="{x:Static resx:ResUI.saila_home}" />
+                            </StackPanel>
+                        </Button>
+                        <Separator />
                         <Menu Margin="0,1" Style="{StaticResource ToolbarMenu}">
                             <MenuItem Padding="{StaticResource MarginLeftRight8}" AutomationProperties.Name="{x:Static resx:ResUI.menuServers}">
                                 <MenuItem.Header>
@@ -332,7 +352,6 @@
                     </ToolBar>
                 </ToolBarTray>
 
-                <ContentControl x:Name="contentStatusBarView" DockPanel.Dock="Bottom" />
 
                 <Grid>
                     <Grid x:Name="gridMain" Visibility="Collapsed">
@@ -453,6 +472,7 @@
                             </TabItem>
                         </TabControl>
                     </Grid>
+                    <ContentControl x:Name="contentStatusBarView" VerticalAlignment="Bottom" Height="0" Visibility="Hidden" Panel.ZIndex="10" />
                     <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" />
                 </Grid>
             </DockPanel>

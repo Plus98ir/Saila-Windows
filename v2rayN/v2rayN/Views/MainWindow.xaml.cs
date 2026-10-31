@@ -28,6 +28,7 @@ public partial class MainWindow
         menuClose.Click += MenuClose_Click;
         menuCheckUpdate.Click += MenuCheckUpdate_Click;
         btnNewUpdate.Click += MenuCheckUpdate_Click;
+        btnBackToHome.Click += (s, e) => ShowHomeView(true);
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
 
         pbTheme.Content ??= new ThemeSettingView();
@@ -276,7 +277,7 @@ public partial class MainWindow
         ShowHideWindow(true);
     }
 
-    private void MenuCheckUpdate_Click(object sender, RoutedEventArgs e)
+    public void MenuCheckUpdate_Click(object sender, RoutedEventArgs e)
     {
         _checkUpdateView ??= new CheckUpdateView();
         _checkUpdateView.ViewModel = ViewModel?.CheckUpdateViewModel;
@@ -285,7 +286,7 @@ public partial class MainWindow
         AppEvents.HasUpdateNotified.Publish(false);
     }
 
-    private void MenuBackupAndRestore_Click(object sender, RoutedEventArgs e)
+    public void MenuBackupAndRestore_Click(object sender, RoutedEventArgs e)
     {
         _backupAndRestoreView ??= new BackupAndRestoreView();
         _backupAndRestoreView.ViewModel = ViewModel?.BackupAndRestoreViewModel;
@@ -295,6 +296,28 @@ public partial class MainWindow
     #endregion Event
 
     #region UI
+
+    public void ShowHomeView(bool isHome)
+    {
+        if (isHome)
+        {
+            panelHome.Visibility = Visibility.Visible;
+            panelAdvanced.Visibility = Visibility.Collapsed;
+            contentStatusBarView.Height = 0;
+            contentStatusBarView.Visibility = Visibility.Hidden;
+            sailaHomeView?.RefreshState();
+        }
+        else
+        {
+            panelHome.Visibility = Visibility.Collapsed;
+            panelAdvanced.Visibility = Visibility.Visible;
+            panelAdvanced.Margin = new Thickness(0, 0, 0, 36);
+            contentStatusBarView.Height = double.NaN;
+            contentStatusBarView.Visibility = Visibility.Visible;
+            UpdateLayout(_config.UiItem.MainGirdOrientation);
+        }
+    }
+
 
     public void ShowHideWindow(bool? blShow)
     {
@@ -324,6 +347,7 @@ public partial class MainWindow
             ShowHideWindow(false);
         }
         RestoreUI();
+        ShowHomeView(true);
     }
 
     private void RestoreUI()

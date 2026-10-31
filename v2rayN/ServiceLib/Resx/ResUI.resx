@@ -1905,4 +1905,83 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="menuAddMasqueServer" xml:space="preserve">
     <value>Add [MASQUE]</value>
   </data>
+
+  <data name="saila_status_connection" xml:space="preserve">
+    <value>Connection status</value>
+  </data>
+  <data name="saila_connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="saila_not_connected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="saila_checking" xml:space="preserve">
+    <value>Checking…</value>
+  </data>
+  <data name="saila_current_server" xml:space="preserve">
+    <value>Current server</value>
+  </data>
+  <data name="saila_no_server" xml:space="preserve">
+    <value>No server yet</value>
+  </data>
+  <data name="saila_add_first" xml:space="preserve">
+    <value>Add your subscription link with the + button</value>
+  </data>
+  <data name="saila_servers" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="saila_upload" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="saila_download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="saila_session_usage" xml:space="preserve">
+    <value>This session</value>
+  </data>
+  <data name="saila_remaining_traffic" xml:space="preserve">
+    <value>Remaining</value>
+  </data>
+  <data name="saila_days_left" xml:space="preserve">
+    <value>Days left</value>
+  </data>
+  <data name="saila_unlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="saila_expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="saila_add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="saila_connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="saila_disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="saila_home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="saila_advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="saila_theme_style" xml:space="preserve">
+    <value>Look</value>
+  </data>
+  <data name="saila_style_glass" xml:space="preserve">
+    <value>Glass</value>
+  </data>
+  <data name="saila_style_nexus" xml:space="preserve">
+    <value>Nexus</value>
+  </data>
+  <data name="saila_style_black" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="saila_style_white" xml:space="preserve">
+    <value>White</value>
+  </data>
+  <data name="saila_accent_color" xml:space="preserve">
+    <value>Accent color</value>
+  </data>
 </root>

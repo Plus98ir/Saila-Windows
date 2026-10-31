@@ -22,7 +22,9 @@ Get `Saila-windows-64.zip` from [Releases](https://github.com/Plus98ir/Saila/rel
 - Subscription User-Agent `Saila/<version>`; downloads and updates come from [Plus98ir/Saila](https://github.com/Plus98ir/Saila/releases/latest).
 - No promotion menu.
 
-Coming next, like the Android app: simple home with one connect button, auto-switch with a reserve server, server flags, MASQUE/XDRIVE from 3X-UI JSON subscriptions.
+- Saila home, like the Android app: one big connect button with timer, server card with flag, live upload/download, session traffic, four looks (Glass, Nexus, Black, White) and seven accent colors. v2rayN's full server table stays one click away (Servers).
+
+Coming next, like Android: auto-switch with a reserve server, MASQUE/XDRIVE from 3X-UI JSON subscriptions.
 
 ---
 
@@ -40,7 +42,9 @@ Coming next, like the Android app: simple home with one connect button, auto-swi
 - User-Agent اشتراک `Saila/<نسخه>`؛ دانلود و آپدیت از [Plus98ir/Saila](https://github.com/Plus98ir/Saila/releases/latest).
 - بدون منوی تبلیغات.
 
-قدم‌های بعدی، مثل نسخه‌ی اندروید: صفحه‌ی ساده با یک دکمه‌ی اتصال، سوییچ خودکار با سرور رزرو، پرچم سرورها، و MASQUE/XDRIVE از اشتراک JSON پنل‌های 3X-UI.
+- صفحه‌ی اصلی Saila مثل اندروید: دکمه‌ی بزرگ اتصال با تایمر، کارت سرور با پرچم، سرعت لحظه‌ای، حجم این اتصال، چهار ظاهر (شیشه‌ای، Nexus، مشکی، سفید) و هفت رنگ. جدول کامل سرورهای v2rayN با یک کلیک (Servers) در دسترس است.
+
+قدم‌های بعدی مثل اندروید: سوییچ خودکار با سرور رزرو، و MASQUE/XDRIVE از اشتراک JSON پنل‌های 3X-UI.
 
 </div>
 

@@ -20,6 +20,20 @@ public partial class ThemeSettingViewModel : MyReactiveObject
 
     [Reactive] public partial string CurrentLanguage { get; set; }
 
+    public BulkObservableCollection<string> SailaLooks { get; } = ["Nexus", "Glass", "Black", "White"];
+    public BulkObservableCollection<ComboItem> SailaAccents { get; } = [
+        new ComboItem { ID = "#7AB0FF", Text = "Blue (#7AB0FF)" },
+        new ComboItem { ID = "#B79CFF", Text = "Purple (#B79CFF)" },
+        new ComboItem { ID = "#FF8CC0", Text = "Pink (#FF8CC0)" },
+        new ComboItem { ID = "#FF8A80", Text = "Red (#FF8A80)" },
+        new ComboItem { ID = "#FFB074", Text = "Orange (#FFB074)" },
+        new ComboItem { ID = "#FFD54F", Text = "Yellow (#FFD54F)" },
+        new ComboItem { ID = "#6EE7A0", Text = "Green (#6EE7A0)" },
+    ];
+
+    [Reactive] public partial string SelectedSailaLook { get; set; }
+    [Reactive] public partial ComboItem SelectedSailaAccent { get; set; }
+
     public ThemeSettingViewModel()
     {
         _config = AppManager.Instance.Config;
@@ -54,6 +68,33 @@ public partial class ThemeSettingViewModel : MyReactiveObject
         CurrentTheme = _config.UiItem.CurrentTheme;
         CurrentFontSize = _config.UiItem.CurrentFontSize;
         CurrentLanguage = _config.UiItem.CurrentLanguage;
+
+        SelectedSailaLook = _config.UiItem.SailaLook ?? "Nexus";
+        SelectedSailaAccent = SailaAccents.FirstOrDefault(t => t.ID == _config.UiItem.SailaAccent) ?? SailaAccents.First();
+
+        this.WhenAnyValue(x => x.SelectedSailaLook)
+            .Where(y => y != null && !y.IsNullOrEmpty())
+            .SubscribeAsync(async _ =>
+            {
+                if (_config.UiItem.SailaLook != SelectedSailaLook)
+                {
+                    _config.UiItem.SailaLook = SelectedSailaLook;
+                    await ConfigHandler.SaveConfig(_config);
+                    (Application.Current?.MainWindow as Views.MainWindow)?.sailaHomeView?.ApplyThemeStyle();
+                }
+            });
+
+        this.WhenAnyValue(x => x.SelectedSailaAccent)
+            .Where(y => y != null && !y.ID.IsNullOrEmpty())
+            .SubscribeAsync(async _ =>
+            {
+                if (_config.UiItem.SailaAccent != SelectedSailaAccent.ID)
+                {
+                    _config.UiItem.SailaAccent = SelectedSailaAccent.ID;
+                    await ConfigHandler.SaveConfig(_config);
+                    (Application.Current?.MainWindow as Views.MainWindow)?.sailaHomeView?.ApplyThemeStyle();
+                }
+            });
 
         this.WhenAnyValue(x => x.CurrentTheme)
             .Where(y => y != null && !y.IsNullOrEmpty())
