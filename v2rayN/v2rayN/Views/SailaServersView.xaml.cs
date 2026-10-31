@@ -28,6 +28,7 @@ public partial class SailaServersView : UserControl
     private List<ServerDisplayItem> _allItems = [];
     private IDisposable? _reloadSubscription;
     private SpeedtestService? _speedtest;
+    private bool _sortedByPing;
 
     public SailaServersView()
     {
@@ -118,7 +119,7 @@ public partial class SailaServersView : UserControl
                 items.Add(displayItem);
             }
 
-            _allItems = items;
+            _allItems = _sortedByPing ? items.OrderBy(PingKey).ToList() : items;
             listServers.ItemsSource = _allItems;
 
             bool isEmpty = _allItems.Count == 0;
@@ -368,12 +369,31 @@ public partial class SailaServersView : UserControl
                 return Task.CompletedTask;
             });
             await _speedtest.RunLoop(ESpeedActionType.Realping, profiles);
+            SortByPing();
         }
         finally
         {
             btnTestAll.IsEnabled = true;
         }
     }
+
+    private void BtnSortPing_Click(object sender, RoutedEventArgs e) => SortByPing();
+
+    // Fastest first; untested next, failed last. Display order only (the subscription's order is kept);
+    // it stays on while Saila runs.
+    private void SortByPing()
+    {
+        _sortedByPing = true;
+        _allItems = _allItems.OrderBy(PingKey).ToList();
+        listServers.ItemsSource = _allItems;
+    }
+
+    private static int PingKey(ServerDisplayItem it) => it.Model.Delay switch
+    {
+        > 0 and var d => d,
+        0 => int.MaxValue - 1,
+        _ => int.MaxValue,
+    };
 
     // Saila: waits for the update to finish before reloading; reloading right away showed the old list.
     private async void BtnUpdateSubs_Click(object sender, RoutedEventArgs e)
@@ -531,6 +551,8 @@ public partial class SailaServersView : UserControl
         btnTestAll.Foreground = accentBrush;
         btnUpdateSubs.Foreground = accentBrush;
         btnColumns.Foreground = accentBrush;
+        btnSortPing.Foreground = accentBrush;
+        SailaTemplate.Part<Border>(btnSortPing, "borderSortPing").Background = borderUpdateSubs.Background;
         borderColumns.Background = borderUpdateSubs.Background;
         ApplyColumns();
         btnEmptyAdd.Tag = accentBrush;

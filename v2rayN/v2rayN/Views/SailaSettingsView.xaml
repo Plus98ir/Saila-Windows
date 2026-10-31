@@ -116,6 +116,16 @@
                                         </ControlTemplate>
                                     </Button.Template>
                                 </Button>
+                                <!-- Port only: neither system proxy nor TUN; apps set Saila's SOCKS/HTTP port themselves -->
+                                <Button x:Name="btnModePort" Height="28" Padding="12,0" Cursor="Hand" Click="BtnModePort_Click" Style="{StaticResource MaterialDesignFlatButton}" AutomationProperties.Name="Port only">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="borderModePort" CornerRadius="14" Background="Transparent" Padding="12,0">
+                                                <TextBlock x:Name="txtModePort" Text="Port only" FontSize="11" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
                             </StackPanel>
                         </Border>
                     </Grid>

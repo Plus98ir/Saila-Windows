@@ -20,11 +20,46 @@ public partial class StatusBarView
         var menu = new ContextMenu { Style = (Style)FindResource("DefContextMenu") };
         var show = new MenuItem { Header = "Show Saila" };
         show.Click += (_, _) => ShowMainWindow();
-        var quit = new MenuItem { Header = "Quit" };
-        quit.Click += menuExit_Click;
         menu.Items.Add(show);
         menu.Items.Add(new Separator());
+        // The three ways to connect; picking one connects in that mode (Port only = no system proxy, no TUN).
+        var modes = new (string Mode, string Label)[]
+        {
+            (SailaConnection.ModeProxy, "System proxy"),
+            (SailaConnection.ModeTun, "TUN"),
+            (SailaConnection.ModePort, "Port only (proxy and TUN off)"),
+        };
+        var modeItems = new List<MenuItem>();
+        foreach (var (mode, label) in modes)
+        {
+            var item = new MenuItem { Header = label, IsCheckable = true };
+            item.Click += async (_, _) =>
+            {
+                await SailaConnection.SetModeAsync(mode);
+                if (!SailaConnection.IsConnected)
+                {
+                    await SailaConnection.ConnectAsync();
+                }
+            };
+            modeItems.Add(item);
+            menu.Items.Add(item);
+        }
+        var disconnect = new MenuItem { Header = "Disconnect" };
+        disconnect.Click += async (_, _) => await SailaConnection.DisconnectAsync();
+        menu.Items.Add(disconnect);
+        menu.Items.Add(new Separator());
+        var quit = new MenuItem { Header = "Quit" };
+        quit.Click += menuExit_Click;
         menu.Items.Add(quit);
+        // Tick the active mode only while connected, so the menu shows what is actually on.
+        menu.Opened += (_, _) =>
+        {
+            for (var i = 0; i < modes.Length; i++)
+            {
+                modeItems[i].IsChecked = SailaConnection.IsConnected && SailaConnection.Mode == modes[i].Mode;
+            }
+            disconnect.IsEnabled = SailaConnection.IsConnected;
+        };
         tbNotify.ContextMenu = menu;
 
         menuExit.Click += menuExit_Click;

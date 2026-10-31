@@ -67,11 +67,18 @@ public partial class SailaHomeView : UserControl
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(_ => RefreshState());
 
+        // Tray / Settings mode changes connect or disconnect too; keep the home state in step.
+        SailaConnection.Changed -= OnConnectionChanged;
+        SailaConnection.Changed += OnConnectionChanged;
+
         _timer.Start();
     }
 
+    private void OnConnectionChanged() => Dispatcher.Invoke(RefreshState);
+
     private void SailaHomeView_Unloaded(object sender, RoutedEventArgs e)
     {
+        SailaConnection.Changed -= OnConnectionChanged;
         _timer.Stop();
         _statsSubscription?.Dispose();
         _proxyChangeSubscription?.Dispose();
@@ -156,9 +163,7 @@ public partial class SailaHomeView : UserControl
 
     private void CheckConnectionState()
     {
-        _isConnected = _config.SystemProxyItem.SysProxyType == ESysProxyType.ForcedChange
-                       || _config.SystemProxyItem.SysProxyType == ESysProxyType.Pac
-                       || StatusBarViewModel.Instance.EnableTun;
+        _isConnected = SailaConnection.IsConnected;
 
         orbControl.IsConnected = _isConnected;
 
@@ -358,25 +363,14 @@ public partial class SailaHomeView : UserControl
                 return;
             }
 
+            // Saila: connect / disconnect in the saved mode (proxy, TUN or port only); the mode itself stays.
             if (_isConnected)
             {
-                // Disconnect
-                AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
-                await StatusBarViewModel.Instance.ChangeSystemProxyAsync(ESysProxyType.ForcedClear, true);
-                _config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedClear;
-                if (StatusBarViewModel.Instance.EnableTun)
-                {
-                    StatusBarViewModel.Instance.EnableTun = false;
-                }
-                await ConfigHandler.SaveConfig(_config);
+                await SailaConnection.DisconnectAsync();
             }
             else
             {
-                // Connect
-                AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
-                await StatusBarViewModel.Instance.ChangeSystemProxyAsync(ESysProxyType.ForcedChange, true);
-                _config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedChange;
-                await ConfigHandler.SaveConfig(_config);
+                await SailaConnection.ConnectAsync();
             }
 
             CheckConnectionState();

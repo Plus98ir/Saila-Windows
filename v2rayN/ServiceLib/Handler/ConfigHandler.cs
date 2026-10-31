@@ -94,6 +94,12 @@ public static class ConfigHandler
             IcmpRouting = Global.TunIcmpRoutingPolicies.First(),
             EnableLegacyProtect = true,
         };
+        // Saila: TUN runs in Xray itself; legacy protect needs a sing-box pre-core that Saila does not ship
+        // ("sing-box not found", no traffic through TUN). Saila also starts disconnected: the user connects.
+        config.TunModeItem.EnableLegacyProtect = false;
+        config.TunModeItem.EnableTun = false;
+        config.SystemProxyItem ??= new();
+        config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedClear;
         config.GuiItem ??= new();
         // Saila: the home page's upload/download/session figures come from Xray's stats, which v2rayN
         // leaves off by default; Saila has no switch for them, so they are always on (also for old configs).

@@ -61,8 +61,7 @@ public partial class SailaSettingsView : UserControl
         FlowDirection = isFa ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 
         // 1. Connection Mode
-        bool isTun = StatusBarViewModel.Instance.EnableTun;
-        UpdateModeButtons(isTun);
+        UpdateModeButtons(SailaConnection.Mode);
 
         // Routing: select the item that is actually active in config/DB
         var routings = await AppManager.Instance.RoutingItems();
@@ -128,9 +127,14 @@ public partial class SailaSettingsView : UserControl
         _initializing = false;
     }
 
-    private void UpdateModeButtons(bool isTun)
+    private void UpdateModeButtons(string mode)
     {
-        txtModeSub.Text = isTun ? ResUI.saila_mode_tun : ResUI.saila_mode_proxy;
+        txtModeSub.Text = mode switch
+        {
+            SailaConnection.ModeTun => ResUI.saila_mode_tun,
+            SailaConnection.ModePort => "Port only: apps use Saila's port",
+            _ => ResUI.saila_mode_proxy,
+        };
 
         string look = _config.UiItem.SailaLook ?? "Nexus";
         string accentHex = _config.UiItem.SailaAccent ?? "#7AB0FF";
@@ -143,8 +147,9 @@ public partial class SailaSettingsView : UserControl
             : new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
 
         // The pill parts live inside each button's template, so look them up there.
-        SetModePill(btnModeTun, "borderModeTun", "txtModeTun", isTun, accentBrush, inactiveText);
-        SetModePill(btnModeProxy, "borderModeProxy", "txtModeProxy", !isTun, accentBrush, inactiveText);
+        SetModePill(btnModeTun, "borderModeTun", "txtModeTun", mode == SailaConnection.ModeTun, accentBrush, inactiveText);
+        SetModePill(btnModeProxy, "borderModeProxy", "txtModeProxy", mode == SailaConnection.ModeProxy, accentBrush, inactiveText);
+        SetModePill(btnModePort, "borderModePort", "txtModePort", mode == SailaConnection.ModePort, accentBrush, inactiveText);
     }
 
     private static void SetModePill(Button button, string borderName, string textName, bool active, Brush accent, Brush inactiveText)
@@ -160,16 +165,17 @@ public partial class SailaSettingsView : UserControl
         }
     }
 
-    private void BtnModeProxy_Click(object sender, RoutedEventArgs e)
-    {
-        StatusBarViewModel.Instance.EnableTun = false;
-        UpdateModeButtons(false);
-    }
+    // Saila: picking a mode only saves it; it is applied right away only while connected.
+    private async void BtnModeProxy_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModeProxy);
 
-    private void BtnModeTun_Click(object sender, RoutedEventArgs e)
+    private async void BtnModeTun_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModeTun);
+
+    private async void BtnModePort_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModePort);
+
+    private async Task PickModeAsync(string mode)
     {
-        StatusBarViewModel.Instance.EnableTun = true;
-        UpdateModeButtons(true);
+        UpdateModeButtons(mode);
+        await SailaConnection.SetModeAsync(mode);
     }
 
     private async void CmbRouting_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -412,7 +418,7 @@ public partial class SailaSettingsView : UserControl
         txtLocalPort.Foreground = accentBrush;
         UpdateLookButtons(look);
         BuildAccentCircles();
-        UpdateModeButtons(StatusBarViewModel.Instance.EnableTun);
+        UpdateModeButtons(SailaConnection.Mode);
 
         Brush cardBg;
         Brush cardBorder;

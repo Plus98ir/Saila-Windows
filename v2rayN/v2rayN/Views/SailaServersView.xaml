@@ -66,6 +66,31 @@
             <!-- Header Actions: Test all & Update subscriptions -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button
+                    x:Name="btnSortPing"
+                    Width="38"
+                    Height="38"
+                    Margin="0,0,8,0"
+                    AutomationProperties.Name="Sort by ping"
+                    Cursor="Hand"
+                    ToolTip="Sort by ping"
+                    Click="BtnSortPing_Click"
+                    Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="borderSortPing" Width="38" Height="38" CornerRadius="19" Background="#20FFFFFF">
+                                <materialDesign:PackIcon
+                                    Kind="SortClockAscendingOutline"
+                                    Width="18"
+                                    Height="18"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button
                     x:Name="btnColumns"
                     Width="38"
                     Height="38"
