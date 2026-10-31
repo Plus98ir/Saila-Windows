@@ -37,6 +37,17 @@ public static class SubscriptionHandler
                 // Get all subscription content (main subscription + additional subscriptions)
                 var result = await DownloadAllSubscriptions(config, item, blProxy, downloadHandle);
 
+                if (!string.IsNullOrWhiteSpace(downloadHandle.ResponseProfileTitle))
+                {
+                    item.Remarks = downloadHandle.ResponseProfileTitle;
+                    await SQLiteHelper.Instance.UpdateAsync(item);
+                }
+                if (!string.IsNullOrWhiteSpace(downloadHandle.ResponseSubscriptionUserInfo))
+                {
+                    item.Memo = downloadHandle.ResponseSubscriptionUserInfo;
+                    await SQLiteHelper.Instance.UpdateAsync(item);
+                }
+
                 // Process download result
                 if (await ProcessDownloadResult(config, item.Id, result, hashCode, updateFunc))
                 {

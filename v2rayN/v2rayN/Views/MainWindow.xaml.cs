@@ -264,7 +264,7 @@ public partial class MainWindow
         }
     }
 
-    private async Task ScanScreenTaskAsync()
+    public async Task ScanScreenTaskAsync()
     {
         ShowHideWindow(false);
 
@@ -293,9 +293,132 @@ public partial class MainWindow
         DialogHost.Show(_backupAndRestoreView, "RootDialog");
     }
 
+    private void BtnNavHome_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Home);
+    private void BtnNavServers_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Servers);
+    private void BtnNavAdd_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Add);
+    private void BtnNavSettings_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Settings);
+    private void BtnNavMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (btnNavMenu.ContextMenu != null)
+        {
+            btnNavMenu.ContextMenu.PlacementTarget = btnNavMenu;
+            btnNavMenu.ContextMenu.IsOpen = true;
+        }
+    }
+    private void MenuReload_Click(object sender, RoutedEventArgs e) => ViewModel?.Reload();
+    private void MenuAdvanced_Click(object sender, RoutedEventArgs e) => ShowAdvancedView();
+
     #endregion Event
 
     #region UI
+
+    private SailaPage _currentPage = SailaPage.Home;
+
+    public SailaHomeView sailaHomeView => viewHome;
+
+    public void NavigateTo(SailaPage page)
+    {
+        _currentPage = page;
+        viewHome.Visibility = page == SailaPage.Home ? Visibility.Visible : Visibility.Collapsed;
+        viewServers.Visibility = page == SailaPage.Servers ? Visibility.Visible : Visibility.Collapsed;
+        viewAdd.Visibility = page == SailaPage.Add ? Visibility.Visible : Visibility.Collapsed;
+        viewSettings.Visibility = page == SailaPage.Settings ? Visibility.Visible : Visibility.Collapsed;
+
+        ApplyThemeStyle();
+
+        switch (page)
+        {
+            case SailaPage.Home:
+                viewHome.RefreshState();
+                break;
+            case SailaPage.Servers:
+                _ = viewServers.LoadServersAsync();
+                break;
+            case SailaPage.Add:
+                break;
+            case SailaPage.Settings:
+                viewSettings.ApplyThemeStyle();
+                break;
+        }
+    }
+
+    public void ShowAdvancedView()
+    {
+        ShowHomeView(false);
+    }
+
+    public void ApplyThemeStyle()
+    {
+        string look = _config.UiItem.SailaLook ?? "Nexus";
+        string accentHex = _config.UiItem.SailaAccent ?? "#7AB0FF";
+        Color accentColor = SailaHomeView.ParseColor(accentHex);
+        var accentBrush = new SolidColorBrush(accentColor);
+        accentBrush.Freeze();
+
+        backdropControl.Look = look;
+        backdropControl.AccentColor = accentColor;
+        backdropControl.InvalidateVisual();
+
+        Brush navBg;
+        Brush navBorder;
+        Brush inactiveBrush;
+
+        switch (look)
+        {
+            case "Glass":
+                navBg = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+                navBorder = new SolidColorBrush(Color.FromArgb(64, 255, 255, 255));
+                inactiveBrush = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
+                break;
+            case "Black":
+                navBg = new SolidColorBrush(Color.FromRgb(0x14, 0x15, 0x19));
+                navBorder = new SolidColorBrush(Color.FromRgb(0x2A, 0x2C, 0x33));
+                inactiveBrush = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                break;
+            case "White":
+                navBg = Brushes.White;
+                navBorder = new SolidColorBrush(Color.FromRgb(0xE2, 0xE7, 0xF0));
+                inactiveBrush = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B));
+                break;
+            case "Nexus":
+            default:
+                navBg = new SolidColorBrush(Color.FromArgb(200, 0x11, 0x1A, 0x33));
+                navBorder = new SolidColorBrush(Color.FromArgb(53, 0x82, 0xA0, 0xFF));
+                inactiveBrush = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
+                break;
+        }
+        navBg.Freeze();
+        navBorder.Freeze();
+        inactiveBrush.Freeze();
+
+        cardNav.Background = navBg;
+        cardNav.BorderBrush = navBorder;
+
+        SetNavButton(btnNavHome, _currentPage == SailaPage.Home, accentBrush, inactiveBrush);
+        SetNavButton(btnNavServers, _currentPage == SailaPage.Servers, accentBrush, inactiveBrush);
+        SetNavButton(btnNavAdd, _currentPage == SailaPage.Add, accentBrush, inactiveBrush);
+        SetNavButton(btnNavSettings, _currentPage == SailaPage.Settings, accentBrush, inactiveBrush);
+        SetNavButton(btnNavMenu, false, accentBrush, inactiveBrush);
+
+        viewHome?.ApplyThemeStyle();
+        viewServers?.ApplyThemeStyle();
+        viewAdd?.ApplyThemeStyle();
+        viewSettings?.ApplyThemeStyle();
+    }
+
+    private static void SetNavButton(Button btn, bool isActive, Brush accentBrush, Brush inactiveBrush)
+    {
+        if (isActive)
+        {
+            btn.Background = accentBrush;
+            btn.Foreground = Brushes.White;
+        }
+        else
+        {
+            btn.Background = Brushes.Transparent;
+            btn.Foreground = inactiveBrush;
+        }
+    }
 
     public void ShowHomeView(bool isHome)
     {
@@ -305,7 +428,7 @@ public partial class MainWindow
             panelAdvanced.Visibility = Visibility.Collapsed;
             contentStatusBarView.Height = 0;
             contentStatusBarView.Visibility = Visibility.Hidden;
-            sailaHomeView?.RefreshState();
+            NavigateTo(SailaPage.Home);
         }
         else
         {
@@ -348,6 +471,7 @@ public partial class MainWindow
         }
         RestoreUI();
         ShowHomeView(true);
+        ApplyThemeStyle();
     }
 
     private void RestoreUI()

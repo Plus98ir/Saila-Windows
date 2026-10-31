@@ -5548,5 +5548,156 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("saila_accent_color", resourceCulture) ?? "saila_accent_color";
             }
         }
+
+        public static string saila_test_all {
+            get {
+                return ResourceManager.GetString("saila_test_all", resourceCulture) ?? "saila_test_all";
+            }
+        }
+        public static string saila_update_subscriptions {
+            get {
+                return ResourceManager.GetString("saila_update_subscriptions", resourceCulture) ?? "saila_update_subscriptions";
+            }
+        }
+        public static string saila_search_servers {
+            get {
+                return ResourceManager.GetString("saila_search_servers", resourceCulture) ?? "saila_search_servers";
+            }
+        }
+        public static string saila_all_servers {
+            get {
+                return ResourceManager.GetString("saila_all_servers", resourceCulture) ?? "saila_all_servers";
+            }
+        }
+        public static string saila_empty_servers {
+            get {
+                return ResourceManager.GetString("saila_empty_servers", resourceCulture) ?? "saila_empty_servers";
+            }
+        }
+        public static string saila_add_title {
+            get {
+                return ResourceManager.GetString("saila_add_title", resourceCulture) ?? "saila_add_title";
+            }
+        }
+        public static string saila_paste_hint {
+            get {
+                return ResourceManager.GetString("saila_paste_hint", resourceCulture) ?? "saila_paste_hint";
+            }
+        }
+        public static string saila_paste_clipboard {
+            get {
+                return ResourceManager.GetString("saila_paste_clipboard", resourceCulture) ?? "saila_paste_clipboard";
+            }
+        }
+        public static string saila_scan_qr {
+            get {
+                return ResourceManager.GetString("saila_scan_qr", resourceCulture) ?? "saila_scan_qr";
+            }
+        }
+        public static string saila_add_success {
+            get {
+                return ResourceManager.GetString("saila_add_success", resourceCulture) ?? "saila_add_success";
+            }
+        }
+        public static string saila_add_failed {
+            get {
+                return ResourceManager.GetString("saila_add_failed", resourceCulture) ?? "saila_add_failed";
+            }
+        }
+        public static string saila_settings_mode {
+            get {
+                return ResourceManager.GetString("saila_settings_mode", resourceCulture) ?? "saila_settings_mode";
+            }
+        }
+        public static string saila_mode_proxy {
+            get {
+                return ResourceManager.GetString("saila_mode_proxy", resourceCulture) ?? "saila_mode_proxy";
+            }
+        }
+        public static string saila_mode_tun {
+            get {
+                return ResourceManager.GetString("saila_mode_tun", resourceCulture) ?? "saila_mode_tun";
+            }
+        }
+        public static string saila_settings_routing {
+            get {
+                return ResourceManager.GetString("saila_settings_routing", resourceCulture) ?? "saila_settings_routing";
+            }
+        }
+        public static string saila_auto_run {
+            get {
+                return ResourceManager.GetString("saila_auto_run", resourceCulture) ?? "saila_auto_run";
+            }
+        }
+        public static string saila_local_port {
+            get {
+                return ResourceManager.GetString("saila_local_port", resourceCulture) ?? "saila_local_port";
+            }
+        }
+        public static string saila_user_agent_title {
+            get {
+                return ResourceManager.GetString("saila_user_agent_title", resourceCulture) ?? "saila_user_agent_title";
+            }
+        }
+        public static string saila_expert_advanced {
+            get {
+                return ResourceManager.GetString("saila_expert_advanced", resourceCulture) ?? "saila_expert_advanced";
+            }
+        }
+        public static string saila_back_to_saila {
+            get {
+                return ResourceManager.GetString("saila_back_to_saila", resourceCulture) ?? "saila_back_to_saila";
+            }
+        }
+        public static string saila_about_text {
+            get {
+                return ResourceManager.GetString("saila_about_text", resourceCulture) ?? "saila_about_text";
+            }
+        }
+        public static string saila_copy_share {
+            get {
+                return ResourceManager.GetString("saila_copy_share", resourceCulture) ?? "saila_copy_share";
+            }
+        }
+        public static string saila_edit_server {
+            get {
+                return ResourceManager.GetString("saila_edit_server", resourceCulture) ?? "saila_edit_server";
+            }
+        }
+        public static string saila_delete_server {
+            get {
+                return ResourceManager.GetString("saila_delete_server", resourceCulture) ?? "saila_delete_server";
+            }
+        }
+        public static string saila_settings_title {
+            get {
+                return ResourceManager.GetString("saila_settings_title", resourceCulture) ?? "saila_settings_title";
+            }
+        }
+        public static string saila_connection {
+            get {
+                return ResourceManager.GetString("saila_connection", resourceCulture) ?? "saila_connection";
+            }
+        }
+        public static string saila_appearance {
+            get {
+                return ResourceManager.GetString("saila_appearance", resourceCulture) ?? "saila_appearance";
+            }
+        }
+        public static string saila_subscription {
+            get {
+                return ResourceManager.GetString("saila_subscription", resourceCulture) ?? "saila_subscription";
+            }
+        }
+        public static string saila_more {
+            get {
+                return ResourceManager.GetString("saila_more", resourceCulture) ?? "saila_more";
+            }
+        }
+        public static string saila_about {
+            get {
+                return ResourceManager.GetString("saila_about", resourceCulture) ?? "saila_about";
+            }
+        }
     }
 }

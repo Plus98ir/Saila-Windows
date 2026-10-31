@@ -1852,4 +1852,95 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_accent_color" xml:space="preserve">
     <value>رنگ اصلی</value>
   </data>
+
+  <data name="saila_test_all" xml:space="preserve">
+    <value>تست همه</value>
+  </data>
+  <data name="saila_update_subscriptions" xml:space="preserve">
+    <value>بروزرسانی اشتراک‌ها</value>
+  </data>
+  <data name="saila_search_servers" xml:space="preserve">
+    <value>جستجوی سرورها…</value>
+  </data>
+  <data name="saila_all_servers" xml:space="preserve">
+    <value>همه</value>
+  </data>
+  <data name="saila_empty_servers" xml:space="preserve">
+    <value>هنوز سروری ندارید — لینک اشتراک خود را اضافه کنید</value>
+  </data>
+  <data name="saila_add_title" xml:space="preserve">
+    <value>افزودن اشتراک یا کانفیگ</value>
+  </data>
+  <data name="saila_paste_hint" xml:space="preserve">
+    <value>لینک اشتراک یا کانفیگ‌های خود را اینجا جای‌گذاری کنید…</value>
+  </data>
+  <data name="saila_paste_clipboard" xml:space="preserve">
+    <value>جای‌گذاری از کلیپ‌بورد</value>
+  </data>
+  <data name="saila_scan_qr" xml:space="preserve">
+    <value>اسکن QR از صفحه</value>
+  </data>
+  <data name="saila_add_success" xml:space="preserve">
+    <value>با موفقیت افزوده شد</value>
+  </data>
+  <data name="saila_add_failed" xml:space="preserve">
+    <value>افزودن ناموفق بود</value>
+  </data>
+  <data name="saila_settings_mode" xml:space="preserve">
+    <value>حالت اتصال</value>
+  </data>
+  <data name="saila_mode_proxy" xml:space="preserve">
+    <value>پروکسی سیستم</value>
+  </data>
+  <data name="saila_mode_tun" xml:space="preserve">
+    <value>حالت TUN</value>
+  </data>
+  <data name="saila_settings_routing" xml:space="preserve">
+    <value>مسیریابی</value>
+  </data>
+  <data name="saila_auto_run" xml:space="preserve">
+    <value>اجرا با شروع ویندوز</value>
+  </data>
+  <data name="saila_local_port" xml:space="preserve">
+    <value>پورت محلی</value>
+  </data>
+  <data name="saila_user_agent_title" xml:space="preserve">
+    <value>User-Agent اشتراک</value>
+  </data>
+  <data name="saila_expert_advanced" xml:space="preserve">
+    <value>پیشرفته (تنظیمات فنی)</value>
+  </data>
+  <data name="saila_back_to_saila" xml:space="preserve">
+    <value>← بازگشت به سایلا</value>
+  </data>
+  <data name="saila_about_text" xml:space="preserve">
+    <value>سایلا {0} · مبتنی بر v2rayN اثر 2dust و Xray-core · مجوز GPL-3.0</value>
+  </data>
+  <data name="saila_copy_share" xml:space="preserve">
+    <value>کپی لینک اشتراک</value>
+  </data>
+  <data name="saila_edit_server" xml:space="preserve">
+    <value>ویرایش سرور</value>
+  </data>
+  <data name="saila_delete_server" xml:space="preserve">
+    <value>حذف سرور</value>
+  </data>
+  <data name="saila_settings_title" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="saila_connection" xml:space="preserve">
+    <value>اتصال</value>
+  </data>
+  <data name="saila_appearance" xml:space="preserve">
+    <value>ظاهر</value>
+  </data>
+  <data name="saila_subscription" xml:space="preserve">
+    <value>اشتراک</value>
+  </data>
+  <data name="saila_more" xml:space="preserve">
+    <value>بیشتر</value>
+  </data>
+  <data name="saila_about" xml:space="preserve">
+    <value>درباره</value>
+  </data>
 </root>

@@ -15,6 +15,9 @@ public class DownloadService
 
     public IReadOnlyDictionary<string, string>? RequestHeaders { get; init; }
 
+    public string? ResponseProfileTitle { get; private set; }
+    public string? ResponseSubscriptionUserInfo { get; private set; }
+
     private static readonly string _tag = "DownloadService";
 
     /// <summary>
@@ -295,7 +298,9 @@ public class DownloadService
             timeoutCts.CancelAfter(webProxy is null ? Global.DirectFetch : Global.ProxyFetch);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-            return await client.GetStringAsync(url, linkedCts.Token);
+            using var response = await client.GetAsync(url, linkedCts.Token);
+            CaptureResponseHeaders(response);
+            return await response.Content.ReadAsStringAsync(linkedCts.Token);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -312,6 +317,77 @@ public class DownloadService
         }
 
         return null;
+    }
+
+    private void CaptureResponseHeaders(HttpResponseMessage response)
+    {
+        try
+        {
+            if (response.Headers.TryGetValues("Profile-Title", out var titles) ||
+                response.Headers.TryGetValues("profile-title", out titles))
+            {
+                ResponseProfileTitle = DecodeProfileTitle(titles.FirstOrDefault());
+            }
+
+            if (response.Headers.TryGetValues("Subscription-Userinfo", out var userInfos) ||
+                response.Headers.TryGetValues("subscription-userinfo", out userInfos))
+            {
+                ResponseSubscriptionUserInfo = userInfos.FirstOrDefault();
+            }
+        }
+        catch { }
+    }
+
+    private static string? DecodeProfileTitle(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        raw = raw.Trim();
+
+        if (raw.StartsWith("base64:", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var b64 = raw.Substring(7).Trim();
+                var bytes = Convert.FromBase64String(b64);
+                return System.Text.Encoding.UTF8.GetString(bytes).Trim();
+            }
+            catch { }
+        }
+
+        if (raw.StartsWith("UTF-8''", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                return Uri.UnescapeDataString(raw.Substring(7)).Trim();
+            }
+            catch { }
+        }
+
+        if (raw.Contains('%'))
+        {
+            try
+            {
+                var unescaped = Uri.UnescapeDataString(raw).Trim();
+                if (!string.IsNullOrWhiteSpace(unescaped))
+                    return unescaped;
+            }
+            catch { }
+        }
+
+        if (Utils.IsBase64String(raw))
+        {
+            try
+            {
+                var decoded = Utils.Base64Decode(raw).Trim();
+                if (!string.IsNullOrWhiteSpace(decoded) && !decoded.Any(ch => char.IsControl(ch) && ch != '\r' && ch != '\n' && ch != '\t'))
+                {
+                    return decoded;
+                }
+            }
+            catch { }
+        }
+
+        return raw;
     }
 
     /// <summary>

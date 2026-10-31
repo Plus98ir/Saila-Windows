@@ -28,10 +28,7 @@ public partial class SailaHomeView : UserControl
     private IDisposable? _statsSubscription;
     private IDisposable? _proxyChangeSubscription;
     private bool _isConnected;
-    // Text colors of the current look; the connection state reuses them instead of fixed white.
-    private Brush _textPrimary = Brushes.White;
-    private Brush? _navDefaultBackground;
-    private Brush _textSecondary = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255));
+    private ProfileItem? _currentServer;
 
     public SailaHomeView()
     {
@@ -97,7 +94,6 @@ public partial class SailaHomeView : UserControl
 
     private void CheckConnectionState()
     {
-        bool wasConnected = _isConnected;
         _isConnected = _config.SystemProxyItem.SysProxyType == ESysProxyType.ForcedChange
                        || _config.SystemProxyItem.SysProxyType == ESysProxyType.Pac
                        || StatusBarViewModel.Instance.EnableTun;
@@ -112,8 +108,8 @@ public partial class SailaHomeView : UserControl
             }
 
             txtConnectionStatus.Text = ResUI.saila_connected;
-            txtConnectionStatus.Foreground = _textPrimary;
-            iconShield.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E)); // HealthGood green
+            txtConnectionStatus.Foreground = Brushes.White;
+            iconShield.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E)); // Green
 
             iconPower.Visibility = Visibility.Collapsed;
             txtTimer.Visibility = Visibility.Visible;
@@ -124,7 +120,7 @@ public partial class SailaHomeView : UserControl
         {
             _connectedSince = null;
             txtConnectionStatus.Text = ResUI.saila_not_connected;
-            txtConnectionStatus.Foreground = _textSecondary;
+            txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255));
             iconShield.Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
 
             iconPower.Visibility = Visibility.Visible;
@@ -172,26 +168,48 @@ public partial class SailaHomeView : UserControl
         }
     }
 
-    private async Task RefreshServerInfoAsync()
+    public async Task RefreshServerInfoAsync(ProfileItem? profile = null)
     {
         try
         {
-            var defaultServer = await ConfigHandler.GetDefaultServer(_config);
-            if (defaultServer != null)
+            if (profile != null)
             {
-                var remarks = defaultServer.Remarks.IsNullOrEmpty() ? defaultServer.Address : defaultServer.Remarks;
-                var (avatar, isFlag, cleanRemarks) = ParseServerAvatar(remarks);
+                _currentServer = profile;
+            }
+            else
+            {
+                _currentServer = await ConfigHandler.GetDefaultServer(_config);
+            }
 
-                txtAvatar.Text = avatar;
-                txtAvatar.FontSize = isFlag ? 22 : 16;
+            if (_currentServer != null)
+            {
+                var remarks = _currentServer.Remarks.IsNullOrEmpty() ? _currentServer.Address : _currentServer.Remarks;
+                var (countryCode, initials, cleanRemarks) = SailaFlagHelper.ParseName(remarks);
+
+                txtAvatar.Text = initials;
                 txtServerRemarks.Text = cleanRemarks;
 
+                // Load flag image asynchronously
+                var flag = await SailaFlagHelper.GetFlagAsync(countryCode);
+                if (flag != null)
+                {
+                    imgFlag.Source = flag;
+                    imgFlag.Visibility = Visibility.Visible;
+                    txtAvatar.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    imgFlag.Source = null;
+                    imgFlag.Visibility = Visibility.Collapsed;
+                    txtAvatar.Visibility = Visibility.Visible;
+                }
+
                 // Subtitle
-                string subtitle = defaultServer.Address;
-                if (!defaultServer.Subid.IsNullOrEmpty())
+                string subtitle = _currentServer.Address;
+                if (!_currentServer.Subid.IsNullOrEmpty())
                 {
                     var subs = await AppManager.Instance.SubItems();
-                    var sub = subs.FirstOrDefault(s => s.Id == defaultServer.Subid);
+                    var sub = subs?.FirstOrDefault(s => s.Id == _currentServer.Subid);
                     if (sub != null && !sub.Remarks.IsNullOrEmpty())
                     {
                         subtitle = sub.Remarks;
@@ -207,8 +225,10 @@ public partial class SailaHomeView : UserControl
             }
             else
             {
+                imgFlag.Source = null;
+                imgFlag.Visibility = Visibility.Collapsed;
+                txtAvatar.Visibility = Visibility.Visible;
                 txtAvatar.Text = "SL";
-                txtAvatar.FontSize = 16;
                 txtServerRemarks.Text = ResUI.saila_no_server;
                 txtServerSubtitle.Text = ResUI.saila_add_first;
                 UpdateUsageStrip(null);
@@ -236,7 +256,6 @@ public partial class SailaHomeView : UserControl
             }
         }
 
-        // No subscription info -> show only session usage across the strip
         colRemaining.Width = new GridLength(0);
         colDays.Width = new GridLength(0);
         panelRemaining.Visibility = Visibility.Collapsed;
@@ -261,6 +280,13 @@ public partial class SailaHomeView : UserControl
     {
         try
         {
+            if (_currentServer == null)
+            {
+                // Rule 5: If no server: the Connect button goes to the Add page instead of doing nothing
+                (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Add);
+                return;
+            }
+
             if (_isConnected)
             {
                 // Disconnect
@@ -291,126 +317,14 @@ public partial class SailaHomeView : UserControl
 
     private void RowServerHeader_Click(object sender, MouseButtonEventArgs e)
     {
-        // Chevron opens Advanced view
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            mw.ShowHomeView(false);
-        }
-    }
-
-    private void BtnNavHome_Click(object sender, RoutedEventArgs e)
-    {
-        // Already on home
-    }
-
-    private void BtnNavServers_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            mw.ShowHomeView(false);
-        }
-    }
-
-    private void BtnNavSettings_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel != null)
-        {
-            mw.ViewModel.OptionSettingCmd.Execute().Subscribe();
-        }
-    }
-
-    private void BtnNavMenu_Click(object sender, RoutedEventArgs e)
-    {
-        btnNavMenu.ContextMenu.PlacementTarget = btnNavMenu;
-        btnNavMenu.ContextMenu.IsOpen = true;
+        // Rule 5: Server card click -> Servers page
+        (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Servers);
     }
 
     private void BtnAddServer_Click(object sender, RoutedEventArgs e)
     {
-        btnAddServer.ContextMenu.PlacementTarget = btnAddServer;
-        btnAddServer.ContextMenu.IsOpen = true;
-    }
-
-    private async void ItemClipboard_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            await mw.AddServerViaClipboardAsync();
-            RefreshState();
-        }
-    }
-
-    private void ItemScan_Click(object sender, RoutedEventArgs e)
-    {
-        StatusBarViewModel.Instance.AddServerViaScanCmd.Execute().Subscribe();
-        RefreshState();
-    }
-
-    private void ItemSubSetting_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel != null)
-        {
-            mw.ViewModel.SubSettingCmd.Execute().Subscribe();
-        }
-    }
-
-    private void ItemSubUpdate_Click(object sender, RoutedEventArgs e)
-    {
-        StatusBarViewModel.Instance.SubUpdateCmd.Execute().Subscribe();
-        RefreshState();
-    }
-
-    private void MenuCheckUpdate_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            mw.MenuCheckUpdate_Click(sender, e);
-        }
-    }
-
-    private void MenuBackupRestore_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            mw.MenuBackupAndRestore_Click(sender, e);
-        }
-    }
-
-    private void MenuReload_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel != null)
-        {
-            mw.ViewModel.ReloadCmd.Execute().Subscribe();
-            RefreshState();
-        }
-    }
-
-    private void MenuClose_Click(object sender, RoutedEventArgs e)
-    {
-        if (Application.Current.MainWindow is MainWindow mw)
-        {
-            mw.ShowHideWindow(false);
-        }
-    }
-
-    private async void Look_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem mi && mi.Tag is string look)
-        {
-            _config.UiItem.SailaLook = look;
-            await ConfigHandler.SaveConfig(_config);
-            ApplyThemeStyle();
-        }
-    }
-
-    private async void Accent_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem mi && mi.Tag is string hex)
-        {
-            _config.UiItem.SailaAccent = hex;
-            await ConfigHandler.SaveConfig(_config);
-            ApplyThemeStyle();
-        }
+        // Rule 5: "+ Add" -> Add page
+        (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Add);
     }
 
     public void ApplyThemeStyle()
@@ -419,10 +333,6 @@ public partial class SailaHomeView : UserControl
         string accentHex = _config.UiItem.SailaAccent ?? "#7AB0FF";
         Color accentColor = ParseColor(accentHex);
         Color deeperAccent = Deeper(accentColor, 0.25f);
-
-        backdropControl.Look = look;
-        backdropControl.AccentColor = accentColor;
-        backdropControl.InvalidateVisual();
 
         orbControl.AccentColor = accentColor;
         orbControl.InvalidateVisual();
@@ -449,12 +359,6 @@ public partial class SailaHomeView : UserControl
         txtSessionVal.Foreground = accentBrush;
         txtRemainingVal.Foreground = accentBrush;
         txtDaysVal.Foreground = accentBrush;
-
-        // Nav active button
-        if (btnNavHome.Template?.FindName("borderNavHome", btnNavHome) is Border bNavHome)
-        {
-            bNavHome.Background = accentBrush;
-        }
 
         // Apply Look card styling
         Brush cardBg;
@@ -514,26 +418,18 @@ public partial class SailaHomeView : UserControl
         cardInfoStrip.Background = cardBg;
         cardInfoStrip.BorderBrush = cardBorder;
 
-        cardNav.BorderBrush = cardBorder;
-
         txtServerRemarks.Foreground = textPrimary;
         txtSpeedUpload.Foreground = textPrimary;
         txtSpeedDownload.Foreground = textPrimary;
 
-        _textPrimary = textPrimary;
-        _textSecondary = textSecondary;
-        txtConnectionStatus.Foreground = _isConnected ? textPrimary : textSecondary;
-        borderAvatar.Background = new SolidColorBrush(Color.FromArgb(look == "White" ? (byte)40 : (byte)60, accentColor.R, accentColor.G, accentColor.B));
-        txtAvatar.Foreground = look == "White" ? deeperBrush : Brushes.White;
-        _navDefaultBackground ??= cardNav.Background;
-        cardNav.Background = look == "White" ? cardBg : _navDefaultBackground;
+        txtConnectionStatus.Foreground = textPrimary;
         txtStatusLabel.Foreground = textSecondary;
         txtServerSubtitle.Foreground = textSecondary;
 
         UpdatePillButton(_isConnected);
     }
 
-    private static Color ParseColor(string hex)
+    public static Color ParseColor(string hex)
     {
         try
         {
@@ -555,7 +451,7 @@ public partial class SailaHomeView : UserControl
         return Color.FromRgb(0x7A, 0xB0, 0xFF);
     }
 
-    private static Color Deeper(Color c, float factor)
+    public static Color Deeper(Color c, float factor)
     {
         byte r = (byte)Math.Max(0, c.R * (1 - factor));
         byte g = (byte)Math.Max(0, c.G * (1 - factor));
@@ -657,7 +553,6 @@ public class SailaBackdropControl : FrameworkElement
         switch (Look)
         {
             case "Glass":
-                // Dark glass base with vivid glows
                 dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x08, 0x0B, 0x16)), null, new Rect(0, 0, w, h));
                 DrawRadialGlow(dc, AccentColor, 110, new Point(0, 0), maxDim * 0.72, w, h);
                 DrawRadialGlow(dc, Deeper(AccentColor, 0.35f), 90, new Point(w * 1.05, h * 0.40), maxDim * 0.62, w, h);
@@ -666,25 +561,22 @@ public class SailaBackdropControl : FrameworkElement
                 break;
 
             case "Black":
-                // Pure dark with soft top glow
                 dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0, 0, 0)), null, new Rect(0, 0, w, h));
                 DrawRadialGlow(dc, AccentColor, 30, new Point(w * 0.5, 0), maxDim * 0.6, w, h);
                 break;
 
             case "White":
-                // Clean white with soft glow
                 dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0xF5, 0xF7, 0xFB)), null, new Rect(0, 0, w, h));
                 DrawRadialGlow(dc, AccentColor, 25, new Point(w * 0.5, 0), maxDim * 0.6, w, h);
                 break;
 
             case "Nexus":
             default:
-                // Deep navy + 32px grid + accent glow top-right + violet glow bottom-left
                 dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x06, 0x0A, 0x17)), null, new Rect(0, 0, w, h));
                 DrawRadialGlow(dc, AccentColor, 90, new Point(w * 0.9, h * 0.05), maxDim * 0.75, w, h);
                 DrawRadialGlow(dc, Color.FromRgb(0x7C, 0x3A, 0xED), 70, new Point(w * 0.1, h * 0.95), maxDim * 0.65, w, h);
 
-                // 32px faint grid
+                // 32px grid
                 var pen = new Pen(new SolidColorBrush(Color.FromArgb(14, 0x78, 0x96, 0xFF)), 1.0);
                 pen.Freeze();
                 for (double x = 0; x < w; x += 32.0)
@@ -716,7 +608,7 @@ public class SailaBackdropControl : FrameworkElement
         dc.DrawRectangle(grad, null, new Rect(0, 0, w, h));
     }
 
-    private static Color Deeper(Color c, float factor)
+    public static Color Deeper(Color c, float factor)
     {
         byte r = (byte)Math.Max(0, c.R * (1 - factor));
         byte g = (byte)Math.Max(0, c.G * (1 - factor));
@@ -724,7 +616,7 @@ public class SailaBackdropControl : FrameworkElement
         return Color.FromRgb(r, g, b);
     }
 
-    private static Color Lighter(Color c, float factor)
+    public static Color Lighter(Color c, float factor)
     {
         byte r = (byte)Math.Min(255, c.R + (255 - c.R) * factor);
         byte g = (byte)Math.Min(255, c.G + (255 - c.G) * factor);

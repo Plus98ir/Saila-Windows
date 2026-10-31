@@ -1685,6 +1685,13 @@ public static class ConfigHandler
                 continue;
             }
 
+            // Saila: panels add fake "info" entries (traffic/days as the name, loopback address);
+            // they are never real servers and must not be picked.
+            if (isSub && profileItem.Address is "127.0.0.1" or "0.0.0.0" or "localhost" or "::1")
+            {
+                continue;
+            }
+
             //exist sub items //filter
             if (isSub && subid.IsNotEmpty() && subFilter.IsNotEmpty())
             {

@@ -1984,4 +1984,95 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_accent_color" xml:space="preserve">
     <value>Accent color</value>
   </data>
+
+  <data name="saila_test_all" xml:space="preserve">
+    <value>Test all</value>
+  </data>
+  <data name="saila_update_subscriptions" xml:space="preserve">
+    <value>Update subscriptions</value>
+  </data>
+  <data name="saila_search_servers" xml:space="preserve">
+    <value>Search servers…</value>
+  </data>
+  <data name="saila_all_servers" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="saila_empty_servers" xml:space="preserve">
+    <value>No servers yet — add your subscription</value>
+  </data>
+  <data name="saila_add_title" xml:space="preserve">
+    <value>Add Subscription or Configs</value>
+  </data>
+  <data name="saila_paste_hint" xml:space="preserve">
+    <value>Paste a subscription link or configs here…</value>
+  </data>
+  <data name="saila_paste_clipboard" xml:space="preserve">
+    <value>Paste from clipboard</value>
+  </data>
+  <data name="saila_scan_qr" xml:space="preserve">
+    <value>Scan QR on screen</value>
+  </data>
+  <data name="saila_add_success" xml:space="preserve">
+    <value>Added successfully</value>
+  </data>
+  <data name="saila_add_failed" xml:space="preserve">
+    <value>Failed to add</value>
+  </data>
+  <data name="saila_settings_mode" xml:space="preserve">
+    <value>Connection Mode</value>
+  </data>
+  <data name="saila_mode_proxy" xml:space="preserve">
+    <value>System Proxy</value>
+  </data>
+  <data name="saila_mode_tun" xml:space="preserve">
+    <value>TUN Mode</value>
+  </data>
+  <data name="saila_settings_routing" xml:space="preserve">
+    <value>Routing</value>
+  </data>
+  <data name="saila_auto_run" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="saila_local_port" xml:space="preserve">
+    <value>Local Port</value>
+  </data>
+  <data name="saila_user_agent_title" xml:space="preserve">
+    <value>Subscription User-Agent</value>
+  </data>
+  <data name="saila_expert_advanced" xml:space="preserve">
+    <value>Advanced (expert)</value>
+  </data>
+  <data name="saila_back_to_saila" xml:space="preserve">
+    <value>← Back to Saila</value>
+  </data>
+  <data name="saila_about_text" xml:space="preserve">
+    <value>Saila {0} · Based on v2rayN by 2dust and Xray-core · GPL-3.0</value>
+  </data>
+  <data name="saila_copy_share" xml:space="preserve">
+    <value>Copy share link</value>
+  </data>
+  <data name="saila_edit_server" xml:space="preserve">
+    <value>Edit server</value>
+  </data>
+  <data name="saila_delete_server" xml:space="preserve">
+    <value>Delete server</value>
+  </data>
+  <data name="saila_settings_title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="saila_connection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="saila_appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="saila_subscription" xml:space="preserve">
+    <value>Subscription</value>
+  </data>
+  <data name="saila_more" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="saila_about" xml:space="preserve">
+    <value>About</value>
+  </data>
 </root>

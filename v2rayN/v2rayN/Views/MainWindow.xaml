@@ -11,9 +11,10 @@
     xmlns:view="clr-namespace:v2rayN.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
     Title="Saila"
-    Width="520"
+    Width="480"
     Height="820"
-    MinWidth="460"
+    MinWidth="420"
+    MinHeight="720"
     x:TypeArguments="vms:MainWindowViewModel"
     Icon="/Resources/v2rayN.ico"
     ResizeMode="CanResizeWithGrip"
@@ -37,9 +38,187 @@
         SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}"
         Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
         <Grid>
-            <!-- 1. Home View (Default content) -->
+            <!-- 1. Saila Flow Shell -->
             <Grid x:Name="panelHome" Visibility="Visible">
-                <view:SailaHomeView x:Name="sailaHomeView" />
+                <!-- Dynamic Backdrop: Nexus / Glass / Black / White + 32px grid + radial glows -->
+                <view:SailaBackdropControl x:Name="backdropControl" />
+
+                <!-- Pages Container -->
+                <Grid x:Name="panelPages">
+                    <view:SailaHomeView x:Name="viewHome" Visibility="Visible" />
+                    <view:SailaServersView x:Name="viewServers" Visibility="Collapsed" />
+                    <view:SailaAddView x:Name="viewAdd" Visibility="Collapsed" />
+                    <view:SailaSettingsView x:Name="viewSettings" Visibility="Collapsed" />
+                </Grid>
+
+                <!-- Floating Pill Bottom Nav: Home / Servers / Add / Settings / Menu -->
+                <Border
+                    x:Name="cardNav"
+                    Height="54"
+                    Width="380"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    CornerRadius="27"
+                    Padding="6,4"
+                    Margin="0,0,0,16"
+                    Background="#90111A33"
+                    BorderBrush="#3582A0FF"
+                    BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Nav 1: Home -->
+                        <Button
+                            Grid.Column="0"
+                            x:Name="btnNavHome"
+                            Width="44"
+                            Height="44"
+                            Cursor="Hand"
+                            ToolTip="{x:Static resx:ResUI.saila_home}"
+                            Click="BtnNavHome_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        CornerRadius="22"
+                                        Background="{TemplateBinding Background}">
+                                        <materialDesign:PackIcon
+                                            Kind="Home"
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Nav 2: Servers -->
+                        <Button
+                            Grid.Column="1"
+                            x:Name="btnNavServers"
+                            Width="44"
+                            Height="44"
+                            Cursor="Hand"
+                            ToolTip="{x:Static resx:ResUI.saila_servers}"
+                            Click="BtnNavServers_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        CornerRadius="22"
+                                        Background="{TemplateBinding Background}">
+                                        <materialDesign:PackIcon
+                                            Kind="Server"
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Nav 3: Add -->
+                        <Button
+                            Grid.Column="2"
+                            x:Name="btnNavAdd"
+                            Width="44"
+                            Height="44"
+                            Cursor="Hand"
+                            ToolTip="{x:Static resx:ResUI.saila_add_title}"
+                            Click="BtnNavAdd_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        CornerRadius="22"
+                                        Background="{TemplateBinding Background}">
+                                        <materialDesign:PackIcon
+                                            Kind="PlusCircleOutline"
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Nav 4: Settings -->
+                        <Button
+                            Grid.Column="3"
+                            x:Name="btnNavSettings"
+                            Width="44"
+                            Height="44"
+                            Cursor="Hand"
+                            ToolTip="{x:Static resx:ResUI.saila_settings_title}"
+                            Click="BtnNavSettings_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        CornerRadius="22"
+                                        Background="{TemplateBinding Background}">
+                                        <materialDesign:PackIcon
+                                            Kind="CogOutline"
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Nav 5: Menu -->
+                        <Button
+                            Grid.Column="4"
+                            x:Name="btnNavMenu"
+                            Width="44"
+                            Height="44"
+                            Cursor="Hand"
+                            ToolTip="Menu"
+                            Click="BtnNavMenu_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        CornerRadius="22"
+                                        Background="{TemplateBinding Background}">
+                                        <materialDesign:PackIcon
+                                            Kind="DotsVertical"
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="menuOptions" Style="{StaticResource DefContextMenu}">
+                                    <MenuItem Header="{x:Static resx:ResUI.menuCheckUpdate}" Click="MenuCheckUpdate_Click" />
+                                    <MenuItem Header="{x:Static resx:ResUI.menuBackupAndRestore}" Click="MenuBackupAndRestore_Click" />
+                                    <MenuItem Header="{x:Static resx:ResUI.menuReload}" Click="MenuReload_Click" />
+                                    <MenuItem Header="{x:Static resx:ResUI.saila_expert_advanced}" Click="MenuAdvanced_Click" />
+                                    <Separator />
+                                    <MenuItem Header="{x:Static resx:ResUI.menuClose}" Click="MenuClose_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
 
             <!-- 2. Advanced View -->
@@ -54,14 +233,14 @@
                         <Button
                             x:Name="btnBackToHome"
                             Padding="{StaticResource MarginLeftRight8}"
-                            ToolTip="{x:Static resx:ResUI.saila_home}"
+                            ToolTip="{x:Static resx:ResUI.saila_back_to_saila}"
                             Style="{StaticResource DefButton}">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon
                                     Margin="{StaticResource MarginRight8}"
                                     VerticalAlignment="Center"
-                                    Kind="Home" />
-                                <TextBlock Text="{x:Static resx:ResUI.saila_home}" />
+                                    Kind="ArrowLeft" />
+                                <TextBlock Text="{x:Static resx:ResUI.saila_back_to_saila}" />
                             </StackPanel>
                         </Button>
                         <Separator />
