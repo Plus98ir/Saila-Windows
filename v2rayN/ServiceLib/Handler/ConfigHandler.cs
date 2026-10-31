@@ -47,7 +47,7 @@ public static class ConfigHandler
             InItem inItem = new()
             {
                 Protocol = nameof(EInboundProtocol.socks),
-                LocalPort = 10808,
+                LocalPort = 10818,
                 UdpEnabled = true,
                 SniffingEnabled = true,
                 RouteOnly = false,
@@ -2681,9 +2681,18 @@ public static class ConfigHandler
         };
         await AddBatchRoutingRules(item1, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "global"));
 
+        // Saila: Iranian sites and IPs go direct, everything else through the proxy; the default.
+        var itemIran = new RoutingItem()
+        {
+            Remarks = $"{ver}Iran direct (Saila)",
+            Url = string.Empty,
+            Sort = maxSort + 4,
+        };
+        await AddBatchRoutingRules(itemIran, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "iran"));
+
         if (!blImportAdvancedRules)
         {
-            await SetDefaultRouting(config, item2);
+            await SetDefaultRouting(config, itemIran);
         }
         return 0;
     }

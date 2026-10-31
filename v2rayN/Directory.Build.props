@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <Version>7.25.6</Version>
+        <Version>0.1.0</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -10,7 +10,7 @@
         <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
         <Nullable>annotations</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Authors>2dust</Authors>
+        <Authors>2dust, Plus98ir</Authors>
         <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
         <Copyright>Copyright © 2017-$([System.DateTime]::UtcNow.Year) $(Authors)</Copyright>
         <InvariantGlobalization>false</InvariantGlobalization>

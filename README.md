@@ -1,80 +1,49 @@
-# v2rayN
+<p align="center">
+  <img src="Saila-Windows.png" alt="Saila for Windows">
+</p>
 
-### A GUI client for Windows, Linux and macOS. Support [Xray](https://github.com/XTLS/Xray-core) and [sing-box](https://github.com/SagerNet/sing-box) and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)
+<h1 align="center">Saila for Windows</h1>
 
-[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)
-[![Release](https://img.shields.io/github/v/release/2dust/v2rayN?logo=github&label=Release)](https://github.com/2dust/v2rayN/releases)
-[![Downloads](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github&label=Downloads)](https://github.com/2dust/v2rayN/releases)
-[![Telegram](https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram)](https://t.me/v2rayn)
- 
-[![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows)](https://github.com/2dust/v2rayN) 
-[![Linux](https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=000)](https://github.com/2dust/v2rayN) 
-[![macOS](https://img.shields.io/badge/macOS-supported-000000?logo=apple)](https://github.com/2dust/v2rayN) 
-[![GPG Signed](https://img.shields.io/badge/GPG-signed-4B32C3?logo=gnuprivacyguard)](https://github.com/2dust/v2rayN)
-
+<p align="center">
+  Simple VPN client for Windows (Xray). Android version: <a href="https://github.com/Plus98ir/Saila">Plus98ir/Saila</a> · <a href="https://plus98ir.github.io/Saila/">Website</a>
+</p>
 
 ---
 
-## Download / 下载
+## Download
 
-Download the latest release here:
+Get `Saila-windows-64.zip` from [Releases](https://github.com/Plus98ir/Saila-Windows/releases/latest), extract it anywhere and run `Saila.exe`. Xray-core is included; no install needed. Windows 10/11, 64-bit.
 
-在这里下载最新版本：
+## What is different from v2rayN
 
-[https://github.com/2dust/v2rayN/releases](https://github.com/2dust/v2rayN/releases)
+- Saila name and icon; settings are kept apart from v2rayN, so both can be installed.
+- Default routing **Iran direct**: Iranian sites and IPs go direct, everything else through the proxy.
+- Local proxy port **10818** (does not clash with v2rayN's 10808).
+- Subscription User-Agent `Saila/<version>`; updates come from this repository.
+- No promotion menu.
 
-
-> [!TIP]
-> v2rayN is the desktop version. For the mobile version, please visit the v2rayNG \
-> v2rayN 是电脑版，手机版请访问 v2rayNG
->
-> https://github.com/2dust/v2rayNG
-
----
-
-## Documentation / 使用文档
-
-Read the Wiki for usage guides and configuration details.
-
-请阅读 Wiki 获取使用说明和配置教程。
-
-[https://github.com/2dust/v2rayN/wiki](https://github.com/2dust/v2rayN/wiki)
+Coming next, like the Android app: simple home with one connect button, auto-switch with a reserve server, server flags, MASQUE/XDRIVE from 3X-UI JSON subscriptions.
 
 ---
 
-## Supported Platforms / 支持平台
+<div dir="rtl">
 
-| Platform / 平台 | x64 | x86 | arm64 | riscv64 | loong64 |
-| --- | --- | --- | --- | --- | --- |
-| Windows | ✅ | ✅ | ✅ | - | - |
-| Linux | ✅ | - | ✅ | ✅ | ✅ |
-| macOS | ✅ | - | ✅ | - | - |
+## دانلود
 
-Minimum OS requirements: [Release files introduction](https://github.com/2dust/v2rayN/wiki/Release-files-introduction) / 最低系统要求：[发布文件介绍](https://github.com/2dust/v2rayN/wiki/Release-files-introduction)
+فایل `Saila-windows-64.zip` را از [Releases](https://github.com/Plus98ir/Saila-Windows/releases/latest) بگیرید، هر جا خواستید باز کنید و `Saila.exe` را اجرا کنید. هسته‌ی Xray داخلش هست و نصب لازم ندارد. ویندوز ۱۰ و ۱۱، ۶۴ بیتی.
 
----
+## فرق با v2rayN
 
-## GPG Verification / GPG 签名校验
+- اسم و آیکون Saila؛ تنظیماتش جدا از v2rayN است و هر دو می‌توانند کنار هم نصب باشند.
+- مسیریابی پیش‌فرض **ایران مستقیم**: سایت‌ها و IPهای ایرانی مستقیم، بقیه از طریق پروکسی.
+- پورت پروکسی محلی **10818** (با 10808 در v2rayN تداخل ندارد).
+- User-Agent اشتراک `Saila/<نسخه>`؛ آپدیت از همین repo.
+- بدون منوی تبلیغات.
 
-Release files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.
+قدم‌های بعدی، مثل نسخه‌ی اندروید: صفحه‌ی ساده با یک دکمه‌ی اتصال، سوییچ خودکار با سرور رزرو، پرچم سرورها، و MASQUE/XDRIVE از اشتراک JSON پنل‌های 3X-UI.
 
-发布文件已使用 GPG 签名，可用于校验文件真实性与完整性，预防镜像站、运营商或 CDN 劫持。
-
-### Fingerprint / 公钥指纹
-
-```text
-7694 5E9F 3E9A 168F 8070 F195 805D 661C
-134D FAF6 8903 C199 463C 31E5 AE90 3AE0
-```
+</div>
 
 ---
 
-## Community / 社区
-
-Telegram Group / Telegram 群组：
-
-[https://t.me/v2rayN](https://t.me/v2rayN)
-
-Telegram Channel / Telegram 频道：
-
-[https://t.me/github_2dust](https://t.me/github_2dust)
+Based on [v2rayN](https://github.com/2dust/v2rayN) by 2dust and [Xray-core](https://github.com/XTLS/Xray-core) · [GPL-3.0](LICENSE)

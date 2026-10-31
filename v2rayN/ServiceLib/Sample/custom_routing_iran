@@ -1,0 +1,31 @@
+[
+  {
+    "remarks": "LAN direct",
+    "outboundTag": "direct",
+    "ip": [
+      "geoip:private"
+    ]
+  },
+  {
+    "remarks": "LAN domains direct",
+    "outboundTag": "direct",
+    "domain": [
+      "geosite:private"
+    ]
+  },
+  {
+    "remarks": "Iranian sites direct",
+    "outboundTag": "direct",
+    "domain": [
+      "geosite:category-ir",
+      "domain:ir"
+    ]
+  },
+  {
+    "remarks": "Iranian IPs direct",
+    "outboundTag": "direct",
+    "ip": [
+      "geoip:ir"
+    ]
+  }
+]
