@@ -13,15 +13,27 @@
     Title="Saila"
     Width="480"
     Height="820"
-    MinWidth="420"
-    MinHeight="720"
+    MinWidth="480"
+    MaxWidth="480"
+    MinHeight="820"
+    MaxHeight="820"
     x:TypeArguments="vms:MainWindowViewModel"
     Icon="/Resources/v2rayN.ico"
-    ResizeMode="CanResizeWithGrip"
+    ResizeMode="CanMinimize"
+    WindowStyle="None"
     ShowInTaskbar="True"
     Style="{StaticResource WindowGlobal}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    <!--  Saila: no system title bar; the drag strip and the two buttons below replace it.  -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -43,12 +55,45 @@
                 <!-- Dynamic Backdrop: Nexus / Glass / Black / White + 32px grid + radial glows -->
                 <view:SailaBackdropControl x:Name="backdropControl" />
 
-                <!-- Pages Container -->
-                <Grid x:Name="panelPages">
+                <!-- Pages Container (below the 32px drag strip) -->
+                <Grid x:Name="panelPages" Margin="0,32,0,0">
                     <view:SailaHomeView x:Name="viewHome" Visibility="Visible" />
                     <view:SailaServersView x:Name="viewServers" Visibility="Collapsed" />
                     <view:SailaAddView x:Name="viewAdd" Visibility="Collapsed" />
                     <view:SailaSettingsView x:Name="viewSettings" Visibility="Collapsed" />
+                </Grid>
+
+                <!-- Drag strip with minimize / close, replacing the Windows title bar -->
+                <Grid
+                    x:Name="stripTitle"
+                    Height="32"
+                    VerticalAlignment="Top"
+                    Background="Transparent"
+                    MouseLeftButtonDown="StripTitle_MouseLeftButtonDown">
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button
+                            x:Name="btnWinMinimize"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="Minimize"
+                            Click="BtnWinMinimize_Click"
+                            Cursor="Hand"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <materialDesign:PackIcon x:Name="iconWinMinimize" Width="16" Height="16" Kind="WindowMinimize" />
+                        </Button>
+                        <Button
+                            x:Name="btnWinClose"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="Close"
+                            Click="BtnWinClose_Click"
+                            Cursor="Hand"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <materialDesign:PackIcon x:Name="iconWinClose" Width="16" Height="16" Kind="Close" />
+                        </Button>
+                    </StackPanel>
                 </Grid>
 
                 <!-- Floating Pill Bottom Nav: Home / Servers / Add / Settings / Menu -->
@@ -211,7 +256,6 @@
                                     <MenuItem Header="{x:Static resx:ResUI.menuCheckUpdate}" Click="MenuCheckUpdate_Click" />
                                     <MenuItem Header="{x:Static resx:ResUI.menuBackupAndRestore}" Click="MenuBackupAndRestore_Click" />
                                     <MenuItem Header="{x:Static resx:ResUI.menuReload}" Click="MenuReload_Click" />
-                                    <MenuItem Header="{x:Static resx:ResUI.saila_expert_advanced}" Click="MenuAdvanced_Click" />
                                     <Separator />
                                     <MenuItem Header="{x:Static resx:ResUI.menuClose}" Click="MenuClose_Click" />
                                 </ContextMenu>

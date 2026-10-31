@@ -188,9 +188,9 @@
                 </StackPanel>
             </Border>
 
-            <!-- 3. Appearance Card -->
+            <!-- 4. Appearance Card (after Subscription, as on Android) -->
             <Border
-                Grid.Row="2"
+                Grid.Row="3"
                 x:Name="cardAppearance"
                 CornerRadius="22"
                 Padding="16"
@@ -251,9 +251,9 @@
                 </StackPanel>
             </Border>
 
-            <!-- 4. Subscription Card -->
+            <!-- 3. Subscription Card -->
             <Border
-                Grid.Row="3"
+                Grid.Row="2"
                 x:Name="cardSubscription"
                 CornerRadius="22"
                 Padding="16"
@@ -347,22 +347,6 @@
                             <materialDesign:PackIcon Grid.Column="0" Kind="BackupRestore" Width="18" Height="18" Foreground="#7AB0FF" VerticalAlignment="Center" />
                             <TextBlock x:Name="txtBackupRestore" Grid.Column="1" Margin="12,0,0,0" Text="{x:Static resx:ResUI.menuBackupAndRestore}" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" />
                             <materialDesign:PackIcon x:Name="iconChev2" Grid.Column="2" Kind="ChevronRight" Width="20" Height="20" Foreground="#94A3B8" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
-
-                    <Separator x:Name="sep6" Background="#20FFFFFF" Margin="0,2,0,2" />
-
-                    <!-- Advanced (expert) Row -->
-                    <Button Height="44" Padding="8,0" Cursor="Hand" Click="BtnAdvanced_Click" Style="{StaticResource MaterialDesignFlatButton}">
-                        <Grid Width="400">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="#7AB0FF" VerticalAlignment="Center" />
-                            <TextBlock x:Name="txtAdvanced" Grid.Column="1" Margin="12,0,0,0" Text="{x:Static resx:ResUI.saila_expert_advanced}" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" />
-                            <materialDesign:PackIcon x:Name="iconChev3" Grid.Column="2" Kind="ChevronRight" Width="20" Height="20" Foreground="#94A3B8" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
 

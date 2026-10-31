@@ -10,12 +10,13 @@ public partial class MainWindow
 {
     private static Config _config;
     private readonly SingleReplaceableDisposable _layoutBindingsDisposable = new();
-    private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
 
     public MainWindow()
     {
         InitializeComponent();
+        // Saila: fixed phone-like size; on screens shorter than 820 px it shrinks to fit instead of running off the bottom.
+        MinHeight = MaxHeight = Height = Math.Min(820, SystemParameters.WorkArea.Height);
 
         _config = AppManager.Instance.Config;
         ThreadPool.RegisterWaitForSingleObject(App.ProgramStarted, OnProgramStarted, null, -1, false);
@@ -279,9 +280,11 @@ public partial class MainWindow
 
     public void MenuCheckUpdate_Click(object sender, RoutedEventArgs e)
     {
-        _checkUpdateView ??= new CheckUpdateView();
-        _checkUpdateView.ViewModel = ViewModel?.CheckUpdateViewModel;
-        DialogHost.Show(_checkUpdateView, "RootDialog");
+        // Saila: its own dialog (Saila, Xray core, geo files) instead of v2rayN's core list.
+        if (ViewModel?.CheckUpdateViewModel is { } vm)
+        {
+            DialogHost.Show(new SailaUpdateView(vm), "RootDialog");
+        }
 
         AppEvents.HasUpdateNotified.Publish(false);
     }
@@ -306,8 +309,6 @@ public partial class MainWindow
         }
     }
     private void MenuReload_Click(object sender, RoutedEventArgs e) => ViewModel?.Reload();
-    private void MenuAdvanced_Click(object sender, RoutedEventArgs e) => ShowAdvancedView();
-
     #endregion Event
 
     #region UI
@@ -342,10 +343,18 @@ public partial class MainWindow
         }
     }
 
-    public void ShowAdvancedView()
+    private void StripTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        ShowHomeView(false);
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
     }
+
+    private void BtnWinMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    // Same as the old title bar X: MainWindow_Closing decides between hiding to the tray and exiting.
+    private void BtnWinClose_Click(object sender, RoutedEventArgs e) => Close();
 
     public void ApplyThemeStyle()
     {
@@ -393,6 +402,8 @@ public partial class MainWindow
 
         cardNav.Background = navBg;
         cardNav.BorderBrush = navBorder;
+        iconWinMinimize.Foreground = inactiveBrush;
+        iconWinClose.Foreground = inactiveBrush;
 
         SetNavButton(btnNavHome, _currentPage == SailaPage.Home, accentBrush, inactiveBrush);
         SetNavButton(btnNavServers, _currentPage == SailaPage.Servers, accentBrush, inactiveBrush);

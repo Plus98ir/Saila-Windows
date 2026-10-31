@@ -16,10 +16,10 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         Focusable="False">
+        <!-- Stretch: Center shrank the cards to their content and left empty bands on both sides -->
         <Grid
-            MaxWidth="460"
-            HorizontalAlignment="Center"
-            Margin="18,16,18,84">
+            HorizontalAlignment="Stretch"
+            Margin="16,8,16,84">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Top Header -->
                 <RowDefinition Height="Auto" /> <!-- Center Orb -->
@@ -266,6 +266,14 @@
                                 Foreground="#94A3B8"
                                 TextTrimming="CharacterEllipsis"
                                 Margin="0,2,0,0" />
+                            <!-- Ping of the current server, shown in place of the subtitle as on Android -->
+                            <TextBlock
+                                x:Name="txtServerPing"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="#22C55E"
+                                Margin="0,2,0,0"
+                                Visibility="Collapsed" />
                         </StackPanel>
 
                         <!-- Chevron Right -->

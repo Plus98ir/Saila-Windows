@@ -922,6 +922,16 @@ public class Utils
     /// Get version
     /// </summary>
     /// <returns></returns>
+    /// <summary>
+    /// Saila: "0.1.4-b4" from "0.1.4-b4+&lt;commit&gt;". The numeric assembly version drops "-b4", which made
+    /// an installed b4 sort above b5 so the update check never offered the next build.
+    /// </summary>
+    public static string VersionFromInformational(string? informational, Version? assemblyVersion)
+    {
+        var version = informational?.Split('+')[0].Trim();
+        return string.IsNullOrEmpty(version) ? assemblyVersion?.ToString(3) ?? "0.0" : version;
+    }
+
     public static string GetVersion(bool blFull = true)
     {
         try
@@ -942,7 +952,10 @@ public class Utils
     {
         try
         {
-            return Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? "0.0";
+            var assembly = Assembly.GetExecutingAssembly();
+            return VersionFromInformational(
+                assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
+                assembly?.GetName()?.Version);
         }
         catch (Exception ex)
         {

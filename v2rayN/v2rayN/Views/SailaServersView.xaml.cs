@@ -10,6 +10,7 @@ using ServiceLib.Manager;
 using ServiceLib.Models.Configs;
 using ServiceLib.Models.Dto;
 using ServiceLib.Resx;
+using ServiceLib.Services;
 using ServiceLib.ViewModels;
 
 namespace v2rayN.Views;
@@ -24,6 +25,7 @@ public partial class SailaServersView : UserControl
     private string _selectedSubId = string.Empty;
     private List<ServerDisplayItem> _allItems = [];
     private IDisposable? _reloadSubscription;
+    private SpeedtestService? _speedtest;
 
     public SailaServersView()
     {
@@ -80,8 +82,17 @@ public partial class SailaServersView : UserControl
             var accentBrush = new SolidColorBrush(accentColor);
             accentBrush.Freeze();
 
+            // ProfileModels carries no delay; take the last test results so pings survive a page change.
+            var delays = (await ProfileExManager.Instance.GetProfileExs())
+                .GroupBy(x => x.IndexId)
+                .ToDictionary(g => g.Key, g => g.First().Delay);
+
             foreach (var m in rawModels)
             {
+                if (delays.TryGetValue(m.IndexId, out var delay))
+                {
+                    m.Delay = delay;
+                }
                 var remarks = m.Remarks.IsNullOrEmpty() ? m.Address : m.Remarks;
                 var (cc, initials, cleanRemarks) = SailaFlagHelper.ParseName(remarks);
 
@@ -325,18 +336,57 @@ public partial class SailaServersView : UserControl
         (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Add);
     }
 
+    // Saila: tests the servers shown on this page. ProfilesViewModel.ServerSpeedtest only tests the rows
+    // selected in v2rayN's hidden grid, so from here it tested nothing.
     private async void BtnTestAll_Click(object sender, RoutedEventArgs e)
     {
-        if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel?.ProfilesViewModel != null)
+        if (_allItems.Count == 0) return;
+        var byId = _allItems.ToDictionary(it => it.Model.IndexId);
+        var profiles = await AppManager.Instance.GetProfileItemsOrderedByIndexIds(byId.Keys);
+        if (profiles.Count == 0) return;
+
+        foreach (var it in _allItems)
         {
-            await mw.ViewModel.ProfilesViewModel.ServerSpeedtest(ESpeedActionType.Realping);
+            it.Model.Delay = 0;
+            it.UpdatePing();
+        }
+        btnTestAll.IsEnabled = false;
+        try
+        {
+            _speedtest ??= new SpeedtestService(_config, result =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (result.IndexId is { } id && byId.TryGetValue(id, out var item) && int.TryParse(result.Delay, out var ms))
+                    {
+                        item.Model.Delay = ms;
+                        item.UpdatePing();
+                    }
+                });
+                return Task.CompletedTask;
+            });
+            await _speedtest.RunLoop(ESpeedActionType.Realping, profiles);
+        }
+        finally
+        {
+            btnTestAll.IsEnabled = true;
         }
     }
 
-    private void BtnUpdateSubs_Click(object sender, RoutedEventArgs e)
+    // Saila: waits for the update to finish before reloading; reloading right away showed the old list.
+    private async void BtnUpdateSubs_Click(object sender, RoutedEventArgs e)
     {
-        StatusBarViewModel.Instance.SubUpdateCmd.Execute().Subscribe();
-        _ = LoadServersAsync();
+        if (Application.Current.MainWindow is not MainWindow { ViewModel: { } vm }) return;
+        btnUpdateSubs.IsEnabled = false;
+        try
+        {
+            await vm.UpdateSubscriptionProcess(string.Empty, false);
+            await LoadServersAsync();
+        }
+        finally
+        {
+            btnUpdateSubs.IsEnabled = true;
+        }
     }
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)

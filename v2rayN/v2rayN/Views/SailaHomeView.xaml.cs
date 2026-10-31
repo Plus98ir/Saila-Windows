@@ -15,6 +15,7 @@ using ServiceLib.Models.Configs;
 using ServiceLib.Models.Dto;
 using ServiceLib.Models.Entities;
 using ServiceLib.Resx;
+using ServiceLib.Services;
 using ServiceLib.ViewModels;
 
 namespace v2rayN.Views;
@@ -28,6 +29,10 @@ public partial class SailaHomeView : UserControl
     private IDisposable? _statsSubscription;
     private IDisposable? _proxyChangeSubscription;
     private bool _isConnected;
+    private SpeedtestService? _pingService;
+    private bool _pingRunning;
+    private string _pingIndexId = string.Empty;
+    private DateTime _pingAt;
     private ProfileItem? _currentServer;
 
     public SailaHomeView()
@@ -83,6 +88,52 @@ public partial class SailaHomeView : UserControl
         else
         {
             _timer.Stop();
+        }
+    }
+
+    // Saila: the server card shows the current server's ping under its name, like the Android home.
+    private void ShowPing(int delay)
+    {
+        if (delay == 0)
+        {
+            txtServerPing.Visibility = Visibility.Collapsed;
+            txtServerSubtitle.Visibility = Visibility.Visible;
+            return;
+        }
+        txtServerPing.Text = delay > 0 ? $"{delay} ms" : "✕";
+        txtServerPing.Foreground = new SolidColorBrush(delay > 0 ? Color.FromRgb(0x22, 0xC5, 0x5E) : Color.FromRgb(0xEF, 0x44, 0x44));
+        txtServerPing.Visibility = Visibility.Visible;
+        txtServerSubtitle.Visibility = Visibility.Collapsed;
+    }
+
+    private async Task MeasurePingAsync(ProfileItem server)
+    {
+        // Home refreshes on every page change; one measurement per server every 30 s is enough.
+        if (_pingRunning || (server.IndexId == _pingIndexId && DateTime.UtcNow - _pingAt < TimeSpan.FromSeconds(30)))
+        {
+            return;
+        }
+        _pingRunning = true;
+        _pingIndexId = server.IndexId;
+        _pingAt = DateTime.UtcNow;
+        try
+        {
+            _pingService ??= new SpeedtestService(_config, result =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (result.IndexId == _currentServer?.IndexId && int.TryParse(result.Delay, out var ms))
+                    {
+                        ShowPing(ms);
+                    }
+                });
+                return Task.CompletedTask;
+            });
+            await _pingService.RunLoop(ESpeedActionType.Realping, [server]);
+        }
+        finally
+        {
+            _pingRunning = false;
         }
     }
 
@@ -226,9 +277,14 @@ public partial class SailaHomeView : UserControl
                 }
 
                 txtServerSubtitle.Text = subtitle;
+                var lastDelay = (await ProfileExManager.Instance.GetProfileExs())
+                    .FirstOrDefault(x => x.IndexId == server.IndexId)?.Delay ?? 0;
+                ShowPing(lastDelay);
+                _ = MeasurePingAsync(server);
             }
             else
             {
+                ShowPing(0);
                 imgFlag.Source = null;
                 imgFlag.Visibility = Visibility.Collapsed;
                 txtAvatar.Visibility = Visibility.Visible;

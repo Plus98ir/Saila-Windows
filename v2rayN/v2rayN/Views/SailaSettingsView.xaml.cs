@@ -364,11 +364,6 @@ public partial class SailaSettingsView : UserControl
         (Application.Current.MainWindow as MainWindow)?.MenuBackupAndRestore_Click(null, null);
     }
 
-    private void BtnAdvanced_Click(object sender, RoutedEventArgs e)
-    {
-        (Application.Current.MainWindow as MainWindow)?.ShowAdvancedView();
-    }
-
     private void BtnBack_Click(object sender, RoutedEventArgs e)
     {
         (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Home);
@@ -507,10 +502,8 @@ public partial class SailaSettingsView : UserControl
 
         txtCheckUpdate.Foreground = textPrimary;
         txtBackupRestore.Foreground = textPrimary;
-        txtAdvanced.Foreground = textPrimary;
         iconChev1.Foreground = textSecondary;
         iconChev2.Foreground = textSecondary;
-        iconChev3.Foreground = textSecondary;
 
         sep1.Background = sepBrush;
         sep2.Background = sepBrush;
@@ -518,7 +511,6 @@ public partial class SailaSettingsView : UserControl
         sep3.Background = sepBrush;
         sep4.Background = sepBrush;
         sep5.Background = sepBrush;
-        sep6.Background = sepBrush;
         sep7.Background = sepBrush;
 
         txtAbout.Foreground = textSecondary;

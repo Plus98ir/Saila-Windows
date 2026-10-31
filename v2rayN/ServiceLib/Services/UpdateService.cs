@@ -2,6 +2,13 @@ namespace ServiceLib.Services;
 
 public partial class UpdateService(Config config, Func<bool, string, Task> updateFunc)
 {
+    /// <summary>
+    /// Saila: the highest version among the releases (pre-releases only when asked). GitHub's /releases
+    /// list is not ordered by version (on 2026-10-31 it gave b2, b1, then the b3 pre-release).
+    /// </summary>
+    public static GitHubRelease? PickRelease(IEnumerable<GitHubRelease> releases, bool preRelease) =>
+        releases.Where(r => preRelease || !r.Prerelease).MaxBy(r => new SemanticVersion(r.TagName));
+
     private readonly Config? _config = config;
     private readonly Func<bool, string, Task>? _updateFunc = updateFunc;
     private static readonly string _tag = "UpdateService";
@@ -184,7 +191,7 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
             }
 
             var gitHubReleases = JsonUtils.Deserialize<List<GitHubRelease>>(result);
-            var gitHubRelease = preRelease ? gitHubReleases?.First() : gitHubReleases?.First(r => r.Prerelease == false);
+            var gitHubRelease = gitHubReleases == null ? null : PickRelease(gitHubReleases, preRelease);
             tagName = gitHubRelease?.TagName;
             //var body = gitHubRelease?.Body;
 
