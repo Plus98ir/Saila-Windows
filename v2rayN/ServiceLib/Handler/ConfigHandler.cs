@@ -2532,7 +2532,8 @@ public static class ConfigHandler
         var item = await SQLiteHelper.Instance.TableAsync<RoutingItem>().FirstOrDefaultAsync(it => it.IsActive == true);
         if (item is null)
         {
-            var item2 = await SQLiteHelper.Instance.TableAsync<RoutingItem>().FirstOrDefaultAsync();
+            var item2 = await SQLiteHelper.Instance.TableAsync<RoutingItem>().FirstOrDefaultAsync(it => it.Remarks.EndsWith("Iran direct (Saila)"))
+                ?? await SQLiteHelper.Instance.TableAsync<RoutingItem>().OrderBy(it => it.Sort).FirstOrDefaultAsync();
             await SetDefaultRouting(config, item2);
             return item2;
         }
@@ -2661,12 +2662,22 @@ public static class ConfigHandler
         }
 
         var maxSort = items.Count;
+        // Saila: Iranian sites and IPs go direct, everything else through the proxy; the default.
+        // Created first (and sorted first) so any "first item" fallback that races startup still lands on it.
+        var itemIran = new RoutingItem()
+        {
+            Remarks = $"{ver}Iran direct (Saila)",
+            Url = string.Empty,
+            Sort = maxSort + 1,
+        };
+        await AddBatchRoutingRules(itemIran, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "iran"));
+
         //Bypass the mainland
         var item2 = new RoutingItem()
         {
             Remarks = $"{ver}绕过大陆(Whitelist)",
             Url = string.Empty,
-            Sort = maxSort + 1,
+            Sort = maxSort + 2,
         };
         await AddBatchRoutingRules(item2, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "white"));
 
@@ -2675,7 +2686,7 @@ public static class ConfigHandler
         {
             Remarks = $"{ver}黑名单(Blacklist)",
             Url = string.Empty,
-            Sort = maxSort + 2,
+            Sort = maxSort + 3,
         };
         await AddBatchRoutingRules(item3, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "black"));
 
@@ -2684,18 +2695,9 @@ public static class ConfigHandler
         {
             Remarks = $"{ver}全局(Global)",
             Url = string.Empty,
-            Sort = maxSort + 3,
-        };
-        await AddBatchRoutingRules(item1, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "global"));
-
-        // Saila: Iranian sites and IPs go direct, everything else through the proxy; the default.
-        var itemIran = new RoutingItem()
-        {
-            Remarks = $"{ver}Iran direct (Saila)",
-            Url = string.Empty,
             Sort = maxSort + 4,
         };
-        await AddBatchRoutingRules(itemIran, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "iran"));
+        await AddBatchRoutingRules(item1, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "global"));
 
         if (!blImportAdvancedRules)
         {

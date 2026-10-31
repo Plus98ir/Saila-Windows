@@ -17,6 +17,10 @@ namespace v2rayN.Views;
 public partial class SailaServersView : UserControl
 {
     private static Config _config => AppManager.Instance.Config;
+    private Border borderBack => SailaTemplate.Part<Border>(btnBack, "borderBack");
+    private MaterialDesignThemes.Wpf.PackIcon iconBack => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnBack, "iconBack");
+    private Border borderTestAll => SailaTemplate.Part<Border>(btnTestAll, "borderTestAll");
+    private Border borderUpdateSubs => SailaTemplate.Part<Border>(btnUpdateSubs, "borderUpdateSubs");
     private string _selectedSubId = string.Empty;
     private List<ServerDisplayItem> _allItems = [];
     private IDisposable? _reloadSubscription;
@@ -146,6 +150,8 @@ public partial class SailaServersView : UserControl
 
     private async Task LoadChipsAsync()
     {
+        // Read the subs before touching the panel: two overlapping calls used to both Clear() and then both add.
+        var subs = await AppManager.Instance.SubItems();
         panelChips.Children.Clear();
 
         string look = _config.UiItem.SailaLook ?? "Nexus";
@@ -159,7 +165,6 @@ public partial class SailaServersView : UserControl
         panelChips.Children.Add(btnAll);
 
         // 2. Subscription Chips - distinct by URL or ID (no duplicates)
-        var subs = await AppManager.Instance.SubItems();
         if (subs != null)
         {
             var distinctSubs = subs
@@ -267,7 +272,7 @@ public partial class SailaServersView : UserControl
                 _config.IndexId = item.Model.IndexId;
                 await mw.ViewModel.ProfilesViewModel.SetDefaultServer(item.Model.IndexId);
                 mw.NavigateTo(SailaPage.Home);
-                await mw.viewHome.RefreshServerInfoAsync(item.Model);
+                await mw.viewHome.RefreshServerInfoAsync();
             }
         }
     }

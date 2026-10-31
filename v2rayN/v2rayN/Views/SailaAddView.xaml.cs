@@ -14,6 +14,14 @@ namespace v2rayN.Views;
 public partial class SailaAddView : UserControl
 {
     private static Config _config => AppManager.Instance.Config;
+    private Border borderBack => SailaTemplate.Part<Border>(btnBack, "borderBack");
+    private MaterialDesignThemes.Wpf.PackIcon iconBack => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnBack, "iconBack");
+    private Border borderPaste => SailaTemplate.Part<Border>(btnPaste, "borderPaste");
+    private MaterialDesignThemes.Wpf.PackIcon iconPaste => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnPaste, "iconPaste");
+    private TextBlock txtPaste => SailaTemplate.Part<TextBlock>(btnPaste, "txtPaste");
+    private Border borderScan => SailaTemplate.Part<Border>(btnScan, "borderScan");
+    private MaterialDesignThemes.Wpf.PackIcon iconScan => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnScan, "iconScan");
+    private TextBlock txtScan => SailaTemplate.Part<TextBlock>(btnScan, "txtScan");
 
     public SailaAddView()
     {

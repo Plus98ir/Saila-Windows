@@ -16,6 +16,8 @@ namespace v2rayN.Views;
 public partial class SailaSettingsView : UserControl
 {
     private static Config _config => AppManager.Instance.Config;
+    private Border borderBack => SailaTemplate.Part<Border>(btnBack, "borderBack");
+    private MaterialDesignThemes.Wpf.PackIcon iconBack => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnBack, "iconBack");
     private bool _initializing = true;
 
     private static readonly (string name, string hex, Color color)[] AccentList =
@@ -244,9 +246,9 @@ public partial class SailaSettingsView : UserControl
             {
                 border.BorderBrush = Brushes.White;
                 border.BorderThickness = new Thickness(2.5);
-                border.Child = new materialDesign.PackIcon
+                border.Child = new MaterialDesignThemes.Wpf.PackIcon
                 {
-                    Kind = materialDesign.PackIconKind.Check,
+                    Kind = MaterialDesignThemes.Wpf.PackIconKind.Check,
                     Width = 16,
                     Height = 16,
                     Foreground = Brushes.White,

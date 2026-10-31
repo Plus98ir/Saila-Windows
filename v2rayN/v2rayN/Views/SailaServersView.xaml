@@ -11,7 +11,7 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid MaxWidth="460" HorizontalAlignment="Center" Margin="16,14,16,84">
+    <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,84">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Header -->
             <RowDefinition Height="Auto" /> <!-- Search Box -->
@@ -175,6 +175,7 @@
                             <Button
                                 AutomationProperties.Name="{Binding CleanRemarks}"
                                 AutomationProperties.AutomationId="{Binding Model.IndexId}"
+                                Height="Auto"
                                 Cursor="Hand"
                                 Margin="0,3,0,5"
                                 Padding="0"

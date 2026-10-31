@@ -108,7 +108,6 @@ public partial class SailaHomeView : UserControl
             }
 
             txtConnectionStatus.Text = ResUI.saila_connected;
-            txtConnectionStatus.Foreground = Brushes.White;
             iconShield.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E)); // Green
 
             iconPower.Visibility = Visibility.Collapsed;
@@ -120,7 +119,6 @@ public partial class SailaHomeView : UserControl
         {
             _connectedSince = null;
             txtConnectionStatus.Text = ResUI.saila_not_connected;
-            txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255));
             iconShield.Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
 
             iconPower.Visibility = Visibility.Visible;

@@ -15,7 +15,7 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         Focusable="False">
-        <Grid MaxWidth="460" HorizontalAlignment="Center" Margin="16,14,16,84">
+        <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,84">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="Auto" /> <!-- Connection Card -->
@@ -36,6 +36,7 @@
                     Width="38"
                     Height="38"
                     Cursor="Hand"
+                    x:Name="btnBack"
                     Click="BtnBack_Click"
                     Style="{StaticResource MaterialDesignFlatButton}">
                     <Button.Template>
