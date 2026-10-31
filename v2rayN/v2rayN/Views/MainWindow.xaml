@@ -19,6 +19,8 @@
     MaxHeight="820"
     x:TypeArguments="vms:MainWindowViewModel"
     Icon="/Resources/v2rayN.ico"
+    AllowsTransparency="True"
+    Background="Transparent"
     ResizeMode="CanMinimize"
     WindowStyle="None"
     ShowInTaskbar="True"
@@ -77,6 +79,7 @@
     </Window.Resources>
 
     <materialDesign:DialogHost
+        x:Name="dialogRoot"
         materialDesign:TransitionAssist.DisableTransitions="True"
         CloseOnClickAway="True"
         Identifier="RootDialog"

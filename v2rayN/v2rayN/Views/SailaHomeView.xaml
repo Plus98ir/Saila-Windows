@@ -266,6 +266,10 @@
                             <!-- Ping of the current server, shown in place of the subtitle as on Android -->
                             <TextBlock
                                 x:Name="txtServerPing"
+                                Cursor="Hand"
+                                Padding="0,2,12,2"
+                                ToolTip="Ping again"
+                                MouseLeftButtonUp="TxtServerPing_Click"
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Foreground="#22C55E"

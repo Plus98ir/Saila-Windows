@@ -17,7 +17,7 @@ public partial class MainWindow
         InitializeComponent();
         // Saila: fixed phone-like size; on screens shorter than 820 px it shrinks to fit instead of running off the bottom.
         MinHeight = MaxHeight = Height = Math.Min(820, SystemParameters.WorkArea.Height);
-        SourceInitialized += (_, _) => RoundCorners();
+        dialogRoot.SizeChanged += (_, _) => RoundCorners();
 
         _config = AppManager.Instance.Config;
         ThreadPool.RegisterWaitForSingleObject(App.ProgramStarted, OnProgramStarted, null, -1, false);
@@ -344,16 +344,11 @@ public partial class MainWindow
         }
     }
 
-    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
-    // Saila: rounded window corners. DWMWA_WINDOW_CORNER_PREFERENCE (33) = DWMWCP_ROUND (2) exists on
-    // Windows 11 only; Windows 10 ignores the call and keeps square corners.
+    // Saila: 20 px rounded window, like the cards inside. The window is transparent and the content is
+    // clipped here; DWM's own rounding is a fixed 8 px and Windows 11 only.
     private void RoundCorners()
     {
-        var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-        var round = 2;
-        _ = DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+        dialogRoot.Clip = new RectangleGeometry(new Rect(0, 0, dialogRoot.ActualWidth, dialogRoot.ActualHeight), 20, 20);
     }
 
     private void StripTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

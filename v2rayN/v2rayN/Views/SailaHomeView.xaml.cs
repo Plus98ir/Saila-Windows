@@ -106,10 +106,21 @@ public partial class SailaHomeView : UserControl
         txtServerSubtitle.Visibility = Visibility.Collapsed;
     }
 
-    private async Task MeasurePingAsync(ProfileItem server)
+    // Saila: a click on the ping measures the current server again, as on Android.
+    private void TxtServerPing_Click(object sender, MouseButtonEventArgs e)
     {
-        // Home refreshes on every page change; one measurement per server every 30 s is enough.
-        if (_pingRunning || (server.IndexId == _pingIndexId && DateTime.UtcNow - _pingAt < TimeSpan.FromSeconds(30)))
+        e.Handled = true; // the header row behind it opens the Servers page
+        if (_currentServer is { } server && !_pingRunning)
+        {
+            txtServerPing.Text = "…";
+            _ = MeasurePingAsync(server, force: true);
+        }
+    }
+
+    private async Task MeasurePingAsync(ProfileItem server, bool force = false)
+    {
+        // Home refreshes on every page change; one automatic measurement per server every 30 s is enough.
+        if (_pingRunning || (!force && server.IndexId == _pingIndexId && DateTime.UtcNow - _pingAt < TimeSpan.FromSeconds(30)))
         {
             return;
         }
