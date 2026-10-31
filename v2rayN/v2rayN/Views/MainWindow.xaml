@@ -119,11 +119,24 @@
                             <materialDesign:PackIcon x:Name="iconWinMinimize" Width="16" Height="16" Kind="WindowMinimize" />
                         </Button>
                         <Button
-                            x:Name="btnWinClose"
+                            x:Name="btnWinTray"
                             Width="40"
                             Height="32"
                             Padding="0"
-                            AutomationProperties.Name="Close"
+                            AutomationProperties.Name="Hide to tray"
+                            Click="BtnWinTray_Click"
+                            Cursor="Hand"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            ToolTip="Hide next to the clock">
+                            <materialDesign:PackIcon x:Name="iconWinTray" Width="16" Height="16" Kind="TrayArrowDown" />
+                        </Button>
+                        <Button
+                            x:Name="btnWinClose"
+                            ToolTip="Quit Saila"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="Quit"
                             Click="BtnWinClose_Click"
                             Cursor="Hand"
                             Style="{StaticResource MaterialDesignFlatButton}">

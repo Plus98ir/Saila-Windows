@@ -240,10 +240,11 @@ public partial class MainWindow
         }
     }
 
+    // Saila: "Close" quits, like the ✕ (hiding next to the clock has its own button).
     private void MenuClose_Click(object sender, RoutedEventArgs e)
     {
         StorageUI();
-        ShowHideWindow(false);
+        BtnWinClose_Click(sender, e);
     }
 
     private void MenuPromotion_Click(object sender, RoutedEventArgs e)
@@ -362,8 +363,20 @@ public partial class MainWindow
 
     private void BtnWinMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
-    // Same as the old title bar X: MainWindow_Closing decides between hiding to the tray and exiting.
-    private void BtnWinClose_Click(object sender, RoutedEventArgs e) => Close();
+    // Saila: three clear choices — minimize to the taskbar, hide next to the clock, or quit.
+    private void BtnWinTray_Click(object sender, RoutedEventArgs e) => ShowHideWindow(false);
+
+    private async void BtnWinClose_Click(object sender, RoutedEventArgs e)
+    {
+        if (contentStatusBarView.Content is StatusBarView statusBar)
+        {
+            await statusBar.ExitAppAsync();
+        }
+        else
+        {
+            await AppManager.Instance.AppExitAsync(true);
+        }
+    }
 
     public void ApplyThemeStyle()
     {
@@ -413,6 +426,7 @@ public partial class MainWindow
         cardNav.BorderBrush = navBorder;
         iconWinMinimize.Foreground = inactiveBrush;
         iconWinClose.Foreground = inactiveBrush;
+        iconWinTray.Foreground = inactiveBrush;
         Resources["SailaScrollThumb"] = new SolidColorBrush(look == "White" ? Color.FromArgb(0x55, 0x0F, 0x17, 0x2A) : Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
 
         SetNavButton(btnNavHome, _currentPage == SailaPage.Home, accentBrush, inactiveBrush);

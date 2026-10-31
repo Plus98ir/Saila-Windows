@@ -1,3 +1,4 @@
+using System.Windows.Controls;
 using v2rayN.Manager;
 
 namespace v2rayN.Views;
@@ -10,6 +11,21 @@ public partial class StatusBarView
     {
         InitializeComponent();
         _config = AppManager.Instance.Config;
+        // Saila: this view sits in the never-shown v2rayN panel, so it never loads and the tray icon was
+        // never created; a hidden window then had no way back. Create it regardless (no efficiency mode).
+        tbNotify.ForceCreate(false);
+        // v2rayN's tray menu and left click are bound in WhenActivated, which never runs for this view.
+        // Saila's tray: a click shows the window; the menu is Show / Quit.
+        tbNotify.LeftClickCommand = ReactiveCommand.Create(ShowMainWindow);
+        var menu = new ContextMenu { Style = (Style)FindResource("DefContextMenu") };
+        var show = new MenuItem { Header = "Show Saila" };
+        show.Click += (_, _) => ShowMainWindow();
+        var quit = new MenuItem { Header = "Quit" };
+        quit.Click += menuExit_Click;
+        menu.Items.Add(show);
+        menu.Items.Add(new Separator());
+        menu.Items.Add(quit);
+        tbNotify.ContextMenu = menu;
 
         menuExit.Click += menuExit_Click;
         txtRunningServerDisplay.PreviewMouseDown += txtRunningInfoDisplay_MouseDoubleClick;
@@ -85,7 +101,12 @@ public partial class StatusBarView
         Application.Current.MainWindow?.Icon = WindowsManager.Instance.GetAppIcon(_config);
     }
 
-    private async void menuExit_Click(object sender, RoutedEventArgs e)
+    private async void menuExit_Click(object sender, RoutedEventArgs e) => await ExitAppAsync();
+
+    private static void ShowMainWindow() => (Application.Current.MainWindow as MainWindow)?.ShowHideWindow(true);
+
+    // Full exit (tray "Exit" and Saila's ✕): removes the tray icon and restores the system proxy.
+    public async Task ExitAppAsync()
     {
         tbNotify.Dispose();
         await AppManager.Instance.AppExitAsync(true);
