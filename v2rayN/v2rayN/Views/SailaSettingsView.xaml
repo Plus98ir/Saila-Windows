@@ -15,7 +15,7 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         Focusable="False">
-        <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,84">
+        <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,104">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="Auto" /> <!-- Connection Card -->
@@ -355,6 +355,7 @@
                             x:Name="txtAbout"
                             Text="Saila · Based on v2rayN by 2dust and Xray-core · GPL-3.0"
                             FontSize="11"
+                            TextWrapping="Wrap"
                             Foreground="#94A3B8"
                             HorizontalAlignment="Center"
                             TextAlignment="Center" />

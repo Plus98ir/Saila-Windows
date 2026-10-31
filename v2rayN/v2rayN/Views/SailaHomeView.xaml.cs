@@ -188,7 +188,13 @@ public partial class SailaHomeView : UserControl
                 txtServerRemarks.Text = cleanRemarks;
 
                 // Load flag image asynchronously
+                var server = _currentServer;
+                countryCode = await SailaFlagHelper.ResolveCountryAsync(countryCode, server.Address);
                 var flag = await SailaFlagHelper.GetFlagAsync(countryCode);
+                if (server != _currentServer)
+                {
+                    return; // another server was picked while this one was looked up
+                }
                 if (flag != null)
                 {
                     imgFlag.Source = flag;

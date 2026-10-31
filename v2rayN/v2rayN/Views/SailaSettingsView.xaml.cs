@@ -119,7 +119,7 @@ public partial class SailaSettingsView : UserControl
         }
 
         // 4. About
-        txtAbout.Text = string.Format(ResUI.saila_about_text, Utils.GetVersion());
+        txtAbout.Text = string.Format(ResUI.saila_about_text, Utils.GetVersionInfo());
 
         _initializing = false;
     }

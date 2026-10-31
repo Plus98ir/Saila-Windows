@@ -115,8 +115,9 @@ public partial class SailaServersView : UserControl
             // Load flag images asynchronously in the background
             _ = Task.Run(async () =>
             {
-                foreach (var it in items)
+                await Parallel.ForEachAsync(items, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (it, _) =>
                 {
+                    it.CountryCode = await SailaFlagHelper.ResolveCountryAsync(it.CountryCode, it.Model.Address);
                     if (!string.IsNullOrEmpty(it.CountryCode))
                     {
                         var flag = await SailaFlagHelper.GetFlagAsync(it.CountryCode);
@@ -131,7 +132,7 @@ public partial class SailaServersView : UserControl
                             });
                         }
                     }
-                }
+                });
             });
         }
         catch

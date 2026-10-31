@@ -11,7 +11,7 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,84">
+    <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,104">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Header -->
             <RowDefinition Height="Auto" /> <!-- Search Box -->
@@ -233,7 +233,11 @@
                                                             Height="38"
                                                             Visibility="{Binding FlagVisibility}"
                                                             HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center" />
+                                                            VerticalAlignment="Center">
+                                                            <Image.Clip>
+                                                                <EllipseGeometry Center="19,19" RadiusX="19" RadiusY="19" />
+                                                            </Image.Clip>
+                                                        </Image>
                                                     </Grid>
                                                 </Border>
 

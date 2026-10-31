@@ -239,7 +239,11 @@
                                     Height="46"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Visibility="Collapsed" />
+                                    Visibility="Collapsed">
+                                    <Image.Clip>
+                                        <EllipseGeometry Center="23,23" RadiusX="23" RadiusY="23" />
+                                    </Image.Clip>
+                                </Image>
                             </Grid>
                         </Border>
 

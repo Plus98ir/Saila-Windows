@@ -1,7 +1,10 @@
 using System.Collections.Concurrent;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -329,5 +332,138 @@ public static class SailaFlagHelper
         _flagCache[code] = null;
         return null;
     }
-}
 
+    // ---- Country by server IP, for names without a country. Same order as Android: CDN/private offline, ipwho.is, ip-api ----
+
+    private static readonly ConcurrentDictionary<string, Task<string?>> _geoTasks = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, string> _geoCache = LoadGeoCache();
+    private static readonly object _geoSaveLock = new();
+
+    // Cloudflare IPv4 ranges: a CDN address says nothing about where the server is.
+    private static readonly (uint net, int bits)[] CdnRanges = new[]
+    {
+        "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22", "141.101.64.0/18",
+        "108.162.192.0/18", "190.93.240.0/20", "188.114.96.0/20", "197.234.240.0/22", "198.41.128.0/17",
+        "162.158.0.0/15", "104.16.0.0/13", "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22"
+    }.Select(c => { var p = c.Split('/'); return (ToUInt(IPAddress.Parse(p[0])), int.Parse(p[1])); }).ToArray();
+
+    private static string GeoCacheFile => Path.Combine(Utils.GetTempPath(), "flags", "geo.json");
+
+    private static ConcurrentDictionary<string, string> LoadGeoCache()
+    {
+        try
+        {
+            if (File.Exists(GeoCacheFile))
+            {
+                var d = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(GeoCacheFile));
+                if (d != null)
+                {
+                    return new ConcurrentDictionary<string, string>(d, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+        }
+        catch { }
+        return new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static void SaveGeoCache()
+    {
+        try
+        {
+            lock (_geoSaveLock)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(GeoCacheFile)!);
+                File.WriteAllText(GeoCacheFile, JsonSerializer.Serialize(_geoCache.ToDictionary(k => k.Key, v => v.Value)));
+            }
+        }
+        catch { }
+    }
+
+    private static uint ToUInt(IPAddress ip)
+    {
+        var b = ip.GetAddressBytes();
+        return ((uint)b[0] << 24) | ((uint)b[1] << 16) | ((uint)b[2] << 8) | b[3];
+    }
+
+    private static bool IsCdnOrPrivate(IPAddress ip)
+    {
+        if (ip.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return IPAddress.IsLoopback(ip) || ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal;
+        }
+        var b = ip.GetAddressBytes();
+        if (b[0] == 10 || b[0] == 127 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168) || (b[0] == 100 && b[1] >= 64 && b[1] <= 127))
+        {
+            return true;
+        }
+        var v = ToUInt(ip);
+        return CdnRanges.Any(r => (v >> (32 - r.bits)) == (r.net >> (32 - r.bits)));
+    }
+
+    /// <summary>Country code from the name if it has one, else from the server address (cached); null when unknown or behind a CDN.</summary>
+    public static async Task<string?> ResolveCountryAsync(string? codeFromName, string? address)
+    {
+        if (!string.IsNullOrEmpty(codeFromName))
+        {
+            return codeFromName;
+        }
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            return null;
+        }
+        address = address.Trim().Trim('[', ']');
+        if (_geoCache.TryGetValue(address, out var hit))
+        {
+            return hit.Length == 2 ? hit : null;
+        }
+        return await _geoTasks.GetOrAdd(address, LookupAsync);
+    }
+
+    private static async Task<string?> LookupAsync(string address)
+    {
+        string? cc = null;
+        try
+        {
+            if (!IPAddress.TryParse(address, out var ip))
+            {
+                var all = await Dns.GetHostAddressesAsync(address);
+                ip = all.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? all.FirstOrDefault();
+            }
+            if (ip != null && IsCdnOrPrivate(ip))
+            {
+                _geoCache[address] = "-";
+                SaveGeoCache();
+                return null;
+            }
+            if (ip != null)
+            {
+                cc = await QueryAsync($"https://ipwho.is/{ip}?fields=success,country_code", "country_code")
+                     ?? await QueryAsync($"http://ip-api.com/json/{ip}?fields=countryCode", "countryCode");
+            }
+        }
+        catch { }
+
+        if (cc is { Length: 2 } && ValidIsoCodes.Contains(cc))
+        {
+            cc = cc.ToLowerInvariant();
+            _geoCache[address] = cc;
+            SaveGeoCache();
+            return cc;
+        }
+        _geoTasks.TryRemove(address, out _); // DNS or lookup services failed; retry on the next refresh
+        return null;
+    }
+
+    private static async Task<string?> QueryAsync(string url, string field)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(await _httpClient.GetStringAsync(url));
+            return doc.RootElement.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
