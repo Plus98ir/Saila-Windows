@@ -88,7 +88,7 @@ public partial class SailaSettingsView : UserControl
 
         // Local Port
         int port = AppManager.Instance.GetLocalPort(EInboundProtocol.socks);
-        txtLocalPort.Text = $"{port} ({EInboundProtocol.mixed})";
+        txtLocalPort.Text = port.ToString();
 
         // 2. Appearance
         UpdateLookButtons(_config.UiItem.SailaLook ?? "Nexus");
@@ -359,6 +359,38 @@ public partial class SailaSettingsView : UserControl
         (Application.Current.MainWindow as MainWindow)?.MenuCheckUpdate_Click(null, null);
     }
 
+    private void TxtLocalPort_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            _ = SaveLocalPortAsync();
+        }
+    }
+
+    private void TxtLocalPort_LostFocus(object sender, RoutedEventArgs e) => _ = SaveLocalPortAsync();
+
+    // Saila: the local mixed port is user-set. Reload restarts the core on the new port and the system
+    // proxy follows it; the other inbounds (API, speed test) are offsets of this one.
+    private async Task SaveLocalPortAsync()
+    {
+        var current = _config.Inbound.First().LocalPort;
+        if (!int.TryParse(txtLocalPort.Text.Trim(), out var port) || port < 1024 || port > 65535)
+        {
+            txtLocalPort.Text = current.ToString();
+            return;
+        }
+        if (port == current)
+        {
+            return;
+        }
+        _config.Inbound.First().LocalPort = port;
+        await ConfigHandler.SaveConfig(_config);
+        if (Application.Current.MainWindow is MainWindow { ViewModel: { } vm })
+        {
+            await vm.Reload();
+        }
+    }
+
     private void BtnBackupRestore_Click(object sender, RoutedEventArgs e)
     {
         (Application.Current.MainWindow as MainWindow)?.MenuBackupAndRestore_Click(null, null);
@@ -477,6 +509,8 @@ public partial class SailaSettingsView : UserControl
         txtAutoRoutingLabel.Foreground = textPrimary;
         txtAutoRoutingStatus.Foreground = textSecondary;
         txtLocalPortLabel.Foreground = textPrimary;
+        txtLocalPortHint.Foreground = textSecondary;
+        txtLocalPort.CaretBrush = textPrimary;
 
         txtLookTitle.Foreground = textSecondary;
         txtAccentTitle.Foreground = textSecondary;

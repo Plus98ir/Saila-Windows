@@ -95,6 +95,10 @@ public static class ConfigHandler
             EnableLegacyProtect = true,
         };
         config.GuiItem ??= new();
+        // Saila: the home page's upload/download/session figures come from Xray's stats, which v2rayN
+        // leaves off by default; Saila has no switch for them, so they are always on (also for old configs).
+        config.GuiItem.EnableStatistics = true;
+        config.GuiItem.DisplayRealTimeSpeed = true;
         if (!Global.RootCertProviders.Contains(config.GuiItem.RootCertProvider))
         {
             config.GuiItem.RootCertProvider = Global.RootCertProviders.First();

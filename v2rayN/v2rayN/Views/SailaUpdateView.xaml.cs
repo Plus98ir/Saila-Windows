@@ -35,6 +35,34 @@ public partial class SailaUpdateView : UserControl
         _statusTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         _statusTimer.Tick += (_, _) => RefreshStatus();
         ApplyLook();
+        // A check started from an earlier dialog keeps running after it was closed; show it and keep
+        // the buttons off until it ends, instead of buttons that silently do nothing.
+        _running = vm.CheckUpdateCmd.IsExecuting.Subscribe(b => { _busyUpdate = b; Dispatcher.Invoke(SyncBusy); });
+        _runningOnly = vm.CheckOnlyCmd.IsExecuting.Subscribe(b => { _busyCheck = b; Dispatcher.Invoke(SyncBusy); });
+        Unloaded += (_, _) => { _running.Dispose(); _runningOnly.Dispose(); _statusTimer.Stop(); };
+        _statusTimer.Start();
+    }
+
+    private readonly IDisposable _running;
+    private readonly IDisposable _runningOnly;
+    private bool _busyUpdate;
+    private bool _busyCheck;
+
+    private void SyncBusy() => btnCheckOnly.IsEnabled = btnUpdate.IsEnabled = !(_busyUpdate || _busyCheck);
+
+    // Downloads go through Saila only while its local port answers; "via proxy" with Saila disconnected
+    // pointed every download at a closed port and the update hung.
+    private static bool LocalProxyUp()
+    {
+        try
+        {
+            using var client = new System.Net.Sockets.TcpClient();
+            return client.ConnectAsync("127.0.0.1", AppManager.Instance.GetLocalPort(EInboundProtocol.socks)).Wait(500) && client.Connected;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     // mihomo and sing-box are left out: Saila never runs them and its zip does not ship them.
@@ -112,8 +140,8 @@ public partial class SailaUpdateView : UserControl
     private async Task RunAsync(bool update)
     {
         ApplySelection();
+        _vm.EnableUpdateViaProxy = LocalProxyUp();
         btnCheckOnly.IsEnabled = btnUpdate.IsEnabled = false;
-        _statusTimer.Start();
         try
         {
             if (update)
@@ -127,7 +155,7 @@ public partial class SailaUpdateView : UserControl
         }
         finally
         {
-            btnCheckOnly.IsEnabled = btnUpdate.IsEnabled = true;
+            SyncBusy();
             RefreshStatus();
         }
     }
@@ -147,11 +175,7 @@ public partial class SailaUpdateView : UserControl
         public void OnCompleted() => done.TrySetResult();
     }
 
-    private void BtnClose_Click(object sender, RoutedEventArgs e)
-    {
-        _statusTimer.Stop();
-        DialogHost.CloseDialogCommand.Execute(null, this);
-    }
+    private void BtnClose_Click(object sender, RoutedEventArgs e) => DialogHost.CloseDialogCommand.Execute(null, this);
 
     private void ApplyLook()
     {

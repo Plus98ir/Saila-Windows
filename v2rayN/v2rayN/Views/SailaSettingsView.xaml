@@ -176,14 +176,29 @@
 
                     <Separator x:Name="sep3" Background="#20FFFFFF" Margin="0,0,0,12" />
 
-                    <!-- Local Port (Read-only) -->
+                    <!-- Local Port: editable; Enter or leaving the box saves it and reloads the core -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="txtLocalPortLabel" Grid.Column="0" Text="{x:Static resx:ResUI.saila_local_port}" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" x:Name="txtLocalPort" Text="10808" FontSize="13" FontWeight="SemiBold" Foreground="#7AB0FF" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtLocalPortLabel" Text="{x:Static resx:ResUI.saila_local_port}" FontSize="13" Foreground="#FFFFFF" />
+                            <TextBlock x:Name="txtLocalPortHint" Text="mixed (SOCKS + HTTP) · 1024–65535" FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <TextBox
+                            Grid.Column="1"
+                            x:Name="txtLocalPort"
+                            Width="80"
+                            AutomationProperties.Name="Local port"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#7AB0FF"
+                            HorizontalContentAlignment="Center"
+                            MaxLength="5"
+                            KeyDown="TxtLocalPort_KeyDown"
+                            LostFocus="TxtLocalPort_LostFocus"
+                            VerticalAlignment="Center" />
                     </Grid>
                 </StackPanel>
             </Border>

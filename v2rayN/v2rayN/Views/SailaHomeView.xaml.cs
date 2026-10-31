@@ -593,7 +593,8 @@ public partial class SailaHomeView : UserControl
 
         if (total <= 0 && expire <= 0) return (string.Empty, string.Empty, false);
 
-        string remaining = total > 0 ? Utils.HumanFy(Math.Max(0, total - (upload + download))) : ResUI.saila_unlimited;
+        // subscription-userinfo is in bytes but Utils.HumanFy takes KB (as Xray's stats are); 45 GB showed as 45 TB.
+        string remaining = total > 0 ? Utils.HumanFy(Math.Max(0, total - (upload + download)) / 1024) : ResUI.saila_unlimited;
         string days = ResUI.saila_unlimited;
         if (expire > 0)
         {

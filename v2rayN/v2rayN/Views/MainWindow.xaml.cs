@@ -10,7 +10,6 @@ public partial class MainWindow
 {
     private static Config _config;
     private readonly SingleReplaceableDisposable _layoutBindingsDisposable = new();
-    private BackupAndRestoreView? _backupAndRestoreView;
 
     public MainWindow()
     {
@@ -292,9 +291,11 @@ public partial class MainWindow
 
     public void MenuBackupAndRestore_Click(object sender, RoutedEventArgs e)
     {
-        _backupAndRestoreView ??= new BackupAndRestoreView();
-        _backupAndRestoreView.ViewModel = ViewModel?.BackupAndRestoreViewModel;
-        DialogHost.Show(_backupAndRestoreView, "RootDialog");
+        // Saila: its own local-file dialog instead of v2rayN's (which also offered WebDAV).
+        if (ViewModel?.BackupAndRestoreViewModel is { } vm)
+        {
+            DialogHost.Show(new SailaBackupView(vm), "RootDialog");
+        }
     }
 
     private void BtnNavHome_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Home);
