@@ -40,6 +40,39 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Popupbox.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+            <!--  Saila: thin rounded scrollbar without arrows or track; ApplyThemeStyle sets SailaScrollThumb per look.  -->
+            <SolidColorBrush x:Key="SailaScrollThumb" Color="#55FFFFFF" />
+            <Style TargetType="ScrollBar">
+                <Setter Property="Width" Value="6" />
+                <Setter Property="MinWidth" Value="6" />
+                <Setter Property="Margin" Value="0,4,2,4" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Track
+                                x:Name="PART_Track"
+                                IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="{DynamicResource SailaScrollThumb}" CornerRadius="3" />
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="Orientation" Value="Horizontal">
+                        <Setter Property="Height" Value="6" />
+                        <Setter Property="Width" Value="Auto" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 

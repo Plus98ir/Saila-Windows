@@ -17,6 +17,7 @@ public partial class MainWindow
         InitializeComponent();
         // Saila: fixed phone-like size; on screens shorter than 820 px it shrinks to fit instead of running off the bottom.
         MinHeight = MaxHeight = Height = Math.Min(820, SystemParameters.WorkArea.Height);
+        SourceInitialized += (_, _) => RoundCorners();
 
         _config = AppManager.Instance.Config;
         ThreadPool.RegisterWaitForSingleObject(App.ProgramStarted, OnProgramStarted, null, -1, false);
@@ -343,6 +344,18 @@ public partial class MainWindow
         }
     }
 
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+    // Saila: rounded window corners. DWMWA_WINDOW_CORNER_PREFERENCE (33) = DWMWCP_ROUND (2) exists on
+    // Windows 11 only; Windows 10 ignores the call and keeps square corners.
+    private void RoundCorners()
+    {
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        var round = 2;
+        _ = DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+    }
+
     private void StripTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState == MouseButtonState.Pressed)
@@ -404,6 +417,7 @@ public partial class MainWindow
         cardNav.BorderBrush = navBorder;
         iconWinMinimize.Foreground = inactiveBrush;
         iconWinClose.Foreground = inactiveBrush;
+        Resources["SailaScrollThumb"] = new SolidColorBrush(look == "White" ? Color.FromArgb(0x55, 0x0F, 0x17, 0x2A) : Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
 
         SetNavButton(btnNavHome, _currentPage == SailaPage.Home, accentBrush, inactiveBrush);
         SetNavButton(btnNavServers, _currentPage == SailaPage.Servers, accentBrush, inactiveBrush);

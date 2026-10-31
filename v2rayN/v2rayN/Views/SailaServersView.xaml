@@ -66,6 +66,32 @@
             <!-- Header Actions: Test all & Update subscriptions -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button
+                    x:Name="btnColumns"
+                    Width="38"
+                    Height="38"
+                    Margin="0,0,8,0"
+                    AutomationProperties.Name="Columns"
+                    Cursor="Hand"
+                    ToolTip="One or two columns"
+                    Click="BtnColumns_Click"
+                    Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="borderColumns" Width="38" Height="38" CornerRadius="19" Background="#20FFFFFF">
+                                <materialDesign:PackIcon
+                                    x:Name="iconColumns"
+                                    Kind="ViewGridOutline"
+                                    Width="18"
+                                    Height="18"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button
                     x:Name="btnTestAll"
                     Width="38"
                     Height="38"
@@ -169,7 +195,7 @@
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled"
                 Focusable="False">
-                <ItemsControl x:Name="listServers">
+                <ItemsControl x:Name="listServers" Margin="-3,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button
@@ -177,7 +203,7 @@
                                 AutomationProperties.AutomationId="{Binding Model.IndexId}"
                                 Height="Auto"
                                 Cursor="Hand"
-                                Margin="0,3,0,5"
+                                Margin="3,3,3,5"
                                 Padding="0"
                                 HorizontalContentAlignment="Stretch"
                                 PreviewMouseLeftButtonUp="ServerRow_Click"

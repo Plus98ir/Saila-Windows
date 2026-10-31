@@ -22,6 +22,8 @@ public partial class SailaServersView : UserControl
     private MaterialDesignThemes.Wpf.PackIcon iconBack => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnBack, "iconBack");
     private Border borderTestAll => SailaTemplate.Part<Border>(btnTestAll, "borderTestAll");
     private Border borderUpdateSubs => SailaTemplate.Part<Border>(btnUpdateSubs, "borderUpdateSubs");
+    private Border borderColumns => SailaTemplate.Part<Border>(btnColumns, "borderColumns");
+    private MaterialDesignThemes.Wpf.PackIcon iconColumns => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnColumns, "iconColumns");
     private string _selectedSubId = string.Empty;
     private List<ServerDisplayItem> _allItems = [];
     private IDisposable? _reloadSubscription;
@@ -389,6 +391,27 @@ public partial class SailaServersView : UserControl
         }
     }
 
+    private async void BtnColumns_Click(object sender, RoutedEventArgs e)
+    {
+        _config.UiItem.SailaServerColumns = _config.UiItem.SailaServerColumns == 2 ? 1 : 2;
+        ApplyColumns();
+        await ConfigHandler.SaveConfig(_config);
+    }
+
+    // One or two columns of server cards; the icon shows the layout a click switches to.
+    private void ApplyColumns()
+    {
+        var columns = _config.UiItem.SailaServerColumns == 2 ? 2 : 1;
+        var panel = new FrameworkElementFactory(typeof(System.Windows.Controls.Primitives.UniformGrid));
+        panel.SetValue(System.Windows.Controls.Primitives.UniformGrid.ColumnsProperty, columns);
+        panel.SetValue(VerticalAlignmentProperty, VerticalAlignment.Top);
+        listServers.ItemsPanel = new ItemsPanelTemplate(panel);
+        if (iconColumns != null)
+        {
+            iconColumns.Kind = columns == 2 ? MaterialDesignThemes.Wpf.PackIconKind.ViewAgendaOutline : MaterialDesignThemes.Wpf.PackIconKind.ViewGridOutline;
+        }
+    }
+
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
         _ = LoadServersAsync();
@@ -507,6 +530,9 @@ public partial class SailaServersView : UserControl
 
         btnTestAll.Foreground = accentBrush;
         btnUpdateSubs.Foreground = accentBrush;
+        btnColumns.Foreground = accentBrush;
+        borderColumns.Background = borderUpdateSubs.Background;
+        ApplyColumns();
         btnEmptyAdd.Tag = accentBrush;
 
         if (_allItems != null)

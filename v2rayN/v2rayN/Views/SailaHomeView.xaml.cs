@@ -479,6 +479,10 @@ public partial class SailaHomeView : UserControl
         cardInfoStrip.BorderBrush = cardBorder;
 
         txtServerRemarks.Foreground = textPrimary;
+        // The avatar's initials were fixed white, invisible on the White look.
+        txtAvatar.Foreground = textPrimary;
+        borderAvatar.Background = new SolidColorBrush(look == "White" ? Color.FromRgb(0xF1, 0xF5, 0xF9) : Color.FromArgb(0x25, 0xFF, 0xFF, 0xFF));
+        borderAvatar.BorderBrush = new SolidColorBrush(look == "White" ? Color.FromRgb(0xE2, 0xE7, 0xF0) : Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
         txtSpeedUpload.Foreground = textPrimary;
         txtSpeedDownload.Foreground = textPrimary;
 

@@ -108,6 +108,7 @@ public class UIItem
     public string? SailaAccent { get; set; } = "#7AB0FF";
     public bool SailaAutoRouting { get; set; } = true;
     public string? SailaRoutingCountry { get; set; }
+    public int SailaServerColumns { get; set; } = 1;
 }
 
 [Serializable]

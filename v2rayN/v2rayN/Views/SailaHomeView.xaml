@@ -12,17 +12,15 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <ScrollViewer
-        VerticalScrollBarVisibility="Auto"
-        HorizontalScrollBarVisibility="Disabled"
-        Focusable="False">
+    <!-- No ScrollViewer: the window has a fixed size and the orb row takes the leftover height, as on Android -->
+    <Grid>
         <!-- Stretch: Center shrank the cards to their content and left empty bands on both sides -->
         <Grid
             HorizontalAlignment="Stretch"
             Margin="16,8,16,84">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Top Header -->
-                <RowDefinition Height="Auto" /> <!-- Center Orb -->
+                <RowDefinition Height="*" /> <!-- Center Orb: takes the leftover height -->
                 <RowDefinition Height="Auto" /> <!-- Server Card -->
                 <RowDefinition Height="Auto" /> <!-- Speed Cards -->
                 <RowDefinition Height="Auto" /> <!-- Info Strip -->
@@ -114,12 +112,10 @@
             </Grid>
 
             <!-- 2. Center: Big Round Connect Button + Animated Ring of Dots -->
+            <Viewbox Grid.Row="1" Margin="0,2,0,6" MaxHeight="400" Stretch="Uniform" StretchDirection="Both">
             <Grid
-                Grid.Row="1"
-                Height="270"
-                Margin="0,6,0,8"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
+                Width="270"
+                Height="270">
                 <!-- Particle Dot Rings Animation Canvas -->
                 <local:SailaOrbControl
                     x:Name="orbControl"
@@ -187,6 +183,7 @@
                     </Grid>
                 </Button>
             </Grid>
+            </Viewbox>
 
             <!-- 3. Server Card -->
             <Border
@@ -330,22 +327,22 @@
                     x:Name="cardUpload"
                     Margin="0,0,6,0"
                     CornerRadius="20"
-                    Padding="12,10"
+                    Padding="14,12"
                     Background="#C016203E"
                     BorderBrush="#3582A0FF"
                     BorderThickness="1">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border
-                            Width="34"
-                            Height="34"
-                            CornerRadius="17"
+                            Width="40"
+                            Height="40"
+                            CornerRadius="20"
                             Background="#20FFFFFF"
                             VerticalAlignment="Center">
                             <materialDesign:PackIcon
                                 x:Name="iconUpload"
                                 Kind="ArrowUpBold"
-                                Width="18"
-                                Height="18"
+                                Width="20"
+                                Height="20"
                                 Foreground="#7AB0FF"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -353,12 +350,12 @@
                         <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                             <TextBlock
                                 Text="{x:Static resx:ResUI.saila_upload}"
-                                FontSize="11"
+                                FontSize="12"
                                 Foreground="#94A3B8" />
                             <TextBlock
                                 x:Name="txtSpeedUpload"
                                 Text="0 B/s"
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="#FFFFFF" />
                         </StackPanel>
@@ -371,22 +368,22 @@
                     x:Name="cardDownload"
                     Margin="6,0,0,0"
                     CornerRadius="20"
-                    Padding="12,10"
+                    Padding="14,12"
                     Background="#C016203E"
                     BorderBrush="#3582A0FF"
                     BorderThickness="1">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border
-                            Width="34"
-                            Height="34"
-                            CornerRadius="17"
+                            Width="40"
+                            Height="40"
+                            CornerRadius="20"
                             Background="#20FFFFFF"
                             VerticalAlignment="Center">
                             <materialDesign:PackIcon
                                 x:Name="iconDownload"
                                 Kind="ArrowDownBold"
-                                Width="18"
-                                Height="18"
+                                Width="20"
+                                Height="20"
                                 Foreground="#7AB0FF"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -394,12 +391,12 @@
                         <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                             <TextBlock
                                 Text="{x:Static resx:ResUI.saila_download}"
-                                FontSize="11"
+                                FontSize="12"
                                 Foreground="#94A3B8" />
                             <TextBlock
                                 x:Name="txtSpeedDownload"
                                 Text="0 B/s"
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="#FFFFFF" />
                         </StackPanel>
@@ -412,7 +409,7 @@
                 Grid.Row="4"
                 x:Name="cardInfoStrip"
                 CornerRadius="20"
-                Padding="14,10"
+                Padding="14,12"
                 Margin="0,4,0,12"
                 Background="#C016203E"
                 BorderBrush="#3582A0FF"
@@ -430,12 +427,12 @@
                             x:Name="txtSessionVal"
                             Text="0 B"
                             FontWeight="Bold"
-                            FontSize="14"
+                            FontSize="16"
                             Foreground="#7AB0FF"
                             HorizontalAlignment="Center" />
                         <TextBlock
                             Text="{x:Static resx:ResUI.saila_session_usage}"
-                            FontSize="11"
+                            FontSize="12"
                             Foreground="#94A3B8"
                             HorizontalAlignment="Center"
                             Margin="0,1,0,0" />
@@ -447,12 +444,12 @@
                             x:Name="txtRemainingVal"
                             Text="{x:Static resx:ResUI.saila_unlimited}"
                             FontWeight="Bold"
-                            FontSize="14"
+                            FontSize="16"
                             Foreground="#7AB0FF"
                             HorizontalAlignment="Center" />
                         <TextBlock
                             Text="{x:Static resx:ResUI.saila_remaining_traffic}"
-                            FontSize="11"
+                            FontSize="12"
                             Foreground="#94A3B8"
                             HorizontalAlignment="Center"
                             Margin="0,1,0,0" />
@@ -464,12 +461,12 @@
                             x:Name="txtDaysVal"
                             Text="{x:Static resx:ResUI.saila_unlimited}"
                             FontWeight="Bold"
-                            FontSize="14"
+                            FontSize="16"
                             Foreground="#7AB0FF"
                             HorizontalAlignment="Center" />
                         <TextBlock
                             Text="{x:Static resx:ResUI.saila_days_left}"
-                            FontSize="11"
+                            FontSize="12"
                             Foreground="#94A3B8"
                             HorizontalAlignment="Center"
                             Margin="0,1,0,0" />
@@ -477,5 +474,5 @@
                 </Grid>
             </Border>
         </Grid>
-    </ScrollViewer>
+    </Grid>
 </UserControl>
