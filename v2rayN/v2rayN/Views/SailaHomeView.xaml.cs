@@ -26,6 +26,9 @@ public partial class SailaHomeView : UserControl
     private readonly DispatcherTimer _timer;
     private DateTime? _connectedSince;
     private long _sessionBytes;
+    // Remaining as the panel last reported it (Utils.HumanFy units, -1 = unlimited, null = no info).
+    private long? _subRemaining;
+    private DateTime _usageSavedAt;
     private IDisposable? _statsSubscription;
     private IDisposable? _proxyChangeSubscription;
     private bool _isConnected;
@@ -319,19 +322,28 @@ public partial class SailaHomeView : UserControl
     {
         if (sub != null)
         {
-            var (remaining, days, hasInfo) = GetSubscriptionUsage(sub);
+            var (remaining, days, hasInfo, usageKey) = GetSubscriptionUsage(sub);
             if (hasInfo)
             {
+                // A new panel report (sub update) already includes what we counted so far: start again from 0.
+                if (_config.UiItem.SailaUsageKey != usageKey)
+                {
+                    _config.UiItem.SailaUsageKey = usageKey;
+                    _config.UiItem.SailaUsedSinceSub = 0;
+                    _ = ConfigHandler.SaveConfig(_config);
+                }
+                _subRemaining = remaining;
                 colRemaining.Width = new GridLength(1, GridUnitType.Star);
                 colDays.Width = new GridLength(1, GridUnitType.Star);
                 panelRemaining.Visibility = Visibility.Visible;
                 panelDays.Visibility = Visibility.Visible;
-                txtRemainingVal.Text = remaining;
+                ShowRemaining();
                 txtDaysVal.Text = days;
                 return;
             }
         }
 
+        _subRemaining = null;
         colRemaining.Width = new GridLength(0);
         colDays.Width = new GridLength(0);
         panelRemaining.Visibility = Visibility.Collapsed;
@@ -346,8 +358,32 @@ public partial class SailaHomeView : UserControl
         txtSpeedDownload.Text = Utils.HumanFy(item.ProxyDown) + "/s";
 
         // Count all traffic through Xray, also apps using the local port while proxy and TUN are off.
-        _sessionBytes += Math.Max(0, item.ProxyUp + item.ProxyDown);
+        var used = Math.Max(0, item.ProxyUp + item.ProxyDown);
+        _sessionBytes += used;
         txtSessionVal.Text = Utils.HumanFy(_sessionBytes);
+
+        // Remaining goes down live by the same amount; saved now and then so a restart doesn't undo it.
+        if (used > 0)
+        {
+            _config.UiItem.SailaUsedSinceSub += used;
+            ShowRemaining();
+            if (DateTime.Now - _usageSavedAt > TimeSpan.FromSeconds(30))
+            {
+                _usageSavedAt = DateTime.Now;
+                _ = ConfigHandler.SaveConfig(_config);
+            }
+        }
+    }
+
+    private void ShowRemaining()
+    {
+        if (_subRemaining == null)
+        {
+            return;
+        }
+        txtRemainingVal.Text = _subRemaining < 0
+            ? ResUI.saila_unlimited
+            : Utils.HumanFy(Math.Max(0, _subRemaining.Value - _config.UiItem.SailaUsedSinceSub));
     }
 
     private async void BtnToggleConnect_Click(object sender, RoutedEventArgs e)
@@ -559,12 +595,13 @@ public partial class SailaHomeView : UserControl
         return (initials, false, remarks);
     }
 
-    public static (string remaining, string daysLeft, bool hasInfo) GetSubscriptionUsage(SubItem? sub)
+    /// <returns>remaining in Utils.HumanFy units (-1 = unlimited); usageKey changes with every new panel report.</returns>
+    public static (long remaining, string daysLeft, bool hasInfo, string usageKey) GetSubscriptionUsage(SubItem? sub)
     {
-        if (sub == null) return (string.Empty, string.Empty, false);
+        if (sub == null) return (0, string.Empty, false, string.Empty);
 
         string raw = $"{sub.Memo} {sub.RequestHeaders}";
-        if (string.IsNullOrWhiteSpace(raw)) return (string.Empty, string.Empty, false);
+        if (string.IsNullOrWhiteSpace(raw)) return (0, string.Empty, false, string.Empty);
 
         long upload = 0, download = 0, total = 0, expire = 0;
         foreach (var part in raw.Split(new[] { ';', ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
@@ -583,10 +620,10 @@ public partial class SailaHomeView : UserControl
             }
         }
 
-        if (total <= 0 && expire <= 0) return (string.Empty, string.Empty, false);
+        if (total <= 0 && expire <= 0) return (0, string.Empty, false, string.Empty);
 
         // subscription-userinfo is in bytes but Utils.HumanFy takes KB (as Xray's stats are); 45 GB showed as 45 TB.
-        string remaining = total > 0 ? Utils.HumanFy(Math.Max(0, total - (upload + download)) / 1024) : ResUI.saila_unlimited;
+        long remaining = total > 0 ? Math.Max(0, total - (upload + download)) / 1024 : -1;
         string days = ResUI.saila_unlimited;
         if (expire > 0)
         {
@@ -597,7 +634,7 @@ public partial class SailaHomeView : UserControl
             else
                 days = Math.Ceiling(diff.TotalDays).ToString("0");
         }
-        return (remaining, days, true);
+        return (remaining, days, true, $"{sub.Id}|{upload}|{download}|{total}");
     }
 }
 

@@ -110,6 +110,9 @@ public class UIItem
     public string? SailaRoutingCountry { get; set; }
     public int SailaServerColumns { get; set; } = 1;
     public string? SailaMode { get; set; } = "Proxy";
+    // Traffic since the panel last reported usage (sub update), in Utils.HumanFy units; key = that report.
+    public string? SailaUsageKey { get; set; }
+    public long SailaUsedSinceSub { get; set; }
 }
 
 [Serializable]

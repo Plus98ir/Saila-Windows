@@ -1,3 +1,5 @@
+using System.Net.NetworkInformation;
+using System.Windows;
 using ServiceLib.Enums;
 using ServiceLib.Handler;
 using ServiceLib.Manager;
@@ -37,8 +39,32 @@ public static class SailaConnection
         if (mode == ModeTun && !StatusBarViewModel.Instance.EnableTun)
         {
             StatusBarViewModel.Instance.EnableTun = true;
+            _ = WatchTunAsync();
         }
         Changed?.Invoke();
+    }
+
+    // Xray quits when Windows can't create the wintun adapter (e.g. a broken wintun driver); traffic then goes
+    // direct while the app said "Connected". Wait for the adapter; without it, disconnect and say why.
+    private static async Task WatchTunAsync()
+    {
+        for (var i = 0; i < 25; i++)
+        {
+            await Task.Delay(1000);
+            if (!StatusBarViewModel.Instance.EnableTun)
+            {
+                return;
+            }
+            if (NetworkInterface.GetAllNetworkInterfaces().Any(n => n.Name == "xray_tun" && n.OperationalStatus == OperationalStatus.Up))
+            {
+                return;
+            }
+        }
+        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        {
+            await DisconnectAsync();
+            NoticeManager.Instance.Enqueue("TUN could not start: Windows did not create the TUN adapter (wintun). Restart Windows or use System proxy.");
+        }).Task.Unwrap();
     }
 
     public static async Task DisconnectAsync()
