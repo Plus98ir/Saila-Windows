@@ -22,12 +22,11 @@ public partial class StatusBarView
         show.Click += (_, _) => ShowMainWindow();
         menu.Items.Add(show);
         menu.Items.Add(new Separator());
-        // The three ways to connect; picking one connects in that mode (Port only = no system proxy, no TUN).
+        // The two ways to connect; picking one connects in that mode.
         var modes = new (string Mode, string Label)[]
         {
             (SailaConnection.ModeProxy, "System proxy"),
             (SailaConnection.ModeTun, "TUN"),
-            (SailaConnection.ModePort, "Port only (proxy and TUN off)"),
         };
         var modeItems = new List<MenuItem>();
         foreach (var (mode, label) in modes)

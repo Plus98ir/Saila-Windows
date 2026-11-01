@@ -129,12 +129,7 @@ public partial class SailaSettingsView : UserControl
 
     private void UpdateModeButtons(string mode)
     {
-        txtModeSub.Text = mode switch
-        {
-            SailaConnection.ModeTun => ResUI.saila_mode_tun,
-            SailaConnection.ModePort => "Port only: apps use Saila's port",
-            _ => ResUI.saila_mode_proxy,
-        };
+        txtModeSub.Text = mode == SailaConnection.ModeTun ? ResUI.saila_mode_tun : ResUI.saila_mode_proxy;
 
         string look = _config.UiItem.SailaLook ?? "Nexus";
         string accentHex = _config.UiItem.SailaAccent ?? "#7AB0FF";
@@ -148,9 +143,7 @@ public partial class SailaSettingsView : UserControl
 
         // The pill parts live inside each button's template, so look them up there.
         SetModePill(btnModeTun, "borderModeTun", "txtModeTun", mode == SailaConnection.ModeTun, accentBrush, inactiveText);
-        SetModePill(btnModeProxy, "borderModeProxy", "txtModeProxy", mode == SailaConnection.ModeProxy, accentBrush, inactiveText);
-        SetModePill(btnModePort, "borderModePort", "txtModePort", mode == SailaConnection.ModePort, accentBrush, inactiveText);
-    }
+        SetModePill(btnModeProxy, "borderModeProxy", "txtModeProxy", mode == SailaConnection.ModeProxy, accentBrush, inactiveText);    }
 
     private static void SetModePill(Button button, string borderName, string textName, bool active, Brush accent, Brush inactiveText)
     {
@@ -169,8 +162,6 @@ public partial class SailaSettingsView : UserControl
     private async void BtnModeProxy_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModeProxy);
 
     private async void BtnModeTun_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModeTun);
-
-    private async void BtnModePort_Click(object sender, RoutedEventArgs e) => await PickModeAsync(SailaConnection.ModePort);
 
     private async Task PickModeAsync(string mode)
     {

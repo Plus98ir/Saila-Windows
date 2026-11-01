@@ -345,11 +345,9 @@ public partial class SailaHomeView : UserControl
         txtSpeedUpload.Text = Utils.HumanFy(item.ProxyUp) + "/s";
         txtSpeedDownload.Text = Utils.HumanFy(item.ProxyDown) + "/s";
 
-        if (_isConnected)
-        {
-            _sessionBytes += Math.Max(0, item.ProxyUp + item.ProxyDown);
-            txtSessionVal.Text = Utils.HumanFy(_sessionBytes);
-        }
+        // Count all traffic through Xray, also apps using the local port while proxy and TUN are off.
+        _sessionBytes += Math.Max(0, item.ProxyUp + item.ProxyDown);
+        txtSessionVal.Text = Utils.HumanFy(_sessionBytes);
     }
 
     private async void BtnToggleConnect_Click(object sender, RoutedEventArgs e)
@@ -363,7 +361,7 @@ public partial class SailaHomeView : UserControl
                 return;
             }
 
-            // Saila: connect / disconnect in the saved mode (proxy, TUN or port only); the mode itself stays.
+            // Saila: connect / disconnect in the saved mode (proxy or TUN); the mode itself stays.
             if (_isConnected)
             {
                 await SailaConnection.DisconnectAsync();
