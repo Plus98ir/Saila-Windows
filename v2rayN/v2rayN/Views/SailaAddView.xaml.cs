@@ -55,6 +55,14 @@ public partial class SailaAddView : UserControl
         cmbGroup.SelectedItem = groups.FirstOrDefault(t => t.Id == selectedId) ?? groups[0];
     }
 
+    private async void BtnSubAdd_Click(object sender, RoutedEventArgs e)
+    {
+        if (Application.Current.MainWindow is MainWindow mw)
+        {
+            await mw.viewServers.AddSubAsync();
+        }
+    }
+
     private void BtnBack_Click(object sender, RoutedEventArgs e)
     {
         (Application.Current.MainWindow as MainWindow)?.NavigateTo(SailaPage.Home);
@@ -178,6 +186,8 @@ public partial class SailaAddView : UserControl
         Brush groupText = look == "White" ? new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A)) : Brushes.White;
         txtGroupLabel.Foreground = groupText;
         cmbGroup.Foreground = groupText;
+        btnSubAdd.Content = $"+ {ResUI.saila_subscription}";
+        btnSubAdd.Foreground = new SolidColorBrush(accentColor);
 
         btnAdd.Background = accentGrad;
 

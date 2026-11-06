@@ -7,6 +7,11 @@ public static class SysProxyHandler
 
     public static async Task<bool> UpdateSysProxy(Config config, bool forceDisable)
     {
+#if SAILA_TEST
+        // A test copy runs beside the user's Saila and must not switch their proxy off.
+        await Task.CompletedTask;
+        return true;
+#endif
         var type = config.SystemProxyItem.SysProxyType;
 
         if (forceDisable && type != ESysProxyType.Unchanged)

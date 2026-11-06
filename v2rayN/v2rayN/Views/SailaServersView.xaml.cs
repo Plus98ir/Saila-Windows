@@ -217,17 +217,16 @@ public partial class SailaServersView : UserControl
                 string title = sub.Remarks.IsNullOrEmpty() ? sub.Url : sub.Remarks;
                 bool isSel = sub.Id == _selectedSubId;
                 var btn = CreateChip(title, sub.Id, isSel, accentBrush, look);
+                var editItem = new MenuItem { Header = ResUI.menuSubEdit };
+                editItem.Click += async (_, _) => await EditSubAsync(sub);
+                btn.ContextMenu = new ContextMenu { Style = (Style)FindResource("DefContextMenu"), Items = { editItem } };
                 panelChips.Children.Add(btn);
             }
         }
-
-        // Add a subscription, or a group without a link for single configs; edit the selected one.
-        panelChips.Children.Add(CreateChip($"+ {ResUI.saila_subscription}", string.Empty, false, accentBrush, look, () => EditSubAsync(new SubItem { Enabled = true }), "btnSubAdd"));
-        if (subs?.FirstOrDefault(t => t.Id == _selectedSubId) is { } selected)
-        {
-            panelChips.Children.Add(CreateChip(ResUI.menuSubEdit, string.Empty, false, accentBrush, look, () => EditSubAsync(selected), "btnSubEdit"));
-        }
     }
+
+    /// <summary>A subscription, or a group for single configs when it has no link; opened from the Add page.</summary>
+    public Task AddSubAsync() => EditSubAsync(new SubItem { Enabled = true });
 
     private async Task EditSubAsync(SubItem item)
     {
@@ -242,6 +241,7 @@ public partial class SailaServersView : UserControl
         if (saved)
         {
             _selectedSubId = vm.SelectedSource.Id;
+            mw.NavigateTo(SailaPage.Servers);
             if (vm.SelectedSource.Url.IsNotEmpty() && (isNew || vm.SelectedSource.Url != oldUrl) && mw.ViewModel != null)
             {
                 await mw.ViewModel.UpdateSubscriptionProcess(vm.SelectedSource.Id, false);
@@ -302,7 +302,7 @@ public partial class SailaServersView : UserControl
         await LoadServersAsync();
     }
 
-    private Button CreateChip(string text, string subId, bool isSelected, Brush accentBrush, string look, Func<Task>? action = null, string? name = null)
+    private Button CreateChip(string text, string subId, bool isSelected, Brush accentBrush, string look)
     {
         var btn = new Button
         {
@@ -373,17 +373,8 @@ public partial class SailaServersView : UserControl
         btn.Content = border;
 
         AutomationProperties.SetName(btn, text);
-        if (name != null)
-        {
-            btn.Name = name;
-        }
         btn.Click += async (s, e) =>
         {
-            if (action != null)
-            {
-                await action();
-                return;
-            }
             _selectedSubId = subId;
             await LoadServersAsync();
         };
@@ -455,6 +446,15 @@ public partial class SailaServersView : UserControl
             }
         };
         rootPage.Children.Add(custom);
+        var subEdit = new Button { Name = "btnTestSubEdit", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Bottom };
+        subEdit.Click += async (_, _) =>
+        {
+            if ((await AppManager.Instance.SubItems())?.FirstOrDefault(t => t.Id == _selectedSubId) is { } selected)
+            {
+                await EditSubAsync(selected);
+            }
+        };
+        rootPage.Children.Add(subEdit);
         var move = new Button { Name = "btnTestMove", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Center };
         move.Click += async (_, _) =>
         {
@@ -508,8 +508,8 @@ public partial class SailaServersView : UserControl
     private async void BtnTestAll_Click(object sender, RoutedEventArgs e)
     {
         if (_allItems.Count == 0) return;
-        var byId = _allItems.ToDictionary(it => it.Model.IndexId);
-        var profiles = await AppManager.Instance.GetProfileItemsOrderedByIndexIds(byId.Keys);
+        var ids = _allItems.Select(it => it.Model.IndexId).ToList();
+        var profiles = await AppManager.Instance.GetProfileItemsOrderedByIndexIds(ids);
         if (profiles.Count == 0) return;
 
         foreach (var it in _allItems)
@@ -520,11 +520,14 @@ public partial class SailaServersView : UserControl
         btnTestAll.IsEnabled = false;
         try
         {
+            // Created once, so it must not keep the rows of this moment: a reload replaces them, and results
+            // then went to rows no longer on screen (no pings, no sorting until the next reload).
             _speedtest ??= new SpeedtestService(_config, result =>
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (result.IndexId is { } id && byId.TryGetValue(id, out var item) && int.TryParse(result.Delay, out var ms))
+                    if (result.IndexId is { } id && int.TryParse(result.Delay, out var ms)
+                        && _allItems.FirstOrDefault(it => it.Model.IndexId == id) is { } item)
                     {
                         item.Model.Delay = ms;
                         item.UpdatePing();

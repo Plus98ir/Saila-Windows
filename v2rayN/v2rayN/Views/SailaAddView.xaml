@@ -80,6 +80,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock x:Name="txtGroupLabel" Margin="0,0,12,0" VerticalAlignment="Center" FontSize="13" Text="{x:Static resx:ResUI.saila_add_to}" />
                         <ComboBox
@@ -88,6 +89,15 @@
                             DisplayMemberPath="Remarks"
                             FontSize="13"
                             Style="{StaticResource MaterialDesignFloatingHintComboBox}" />
+                        <Button
+                            x:Name="btnSubAdd"
+                            Grid.Column="2"
+                            Height="32"
+                            Margin="12,0,0,0"
+                            Padding="12,0"
+                            Cursor="Hand"
+                            Click="BtnSubAdd_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}" />
                     </Grid>
                     <!-- Input Box -->
                     <Border

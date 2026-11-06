@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <Version>0.1.7-b1</Version>
+        <Version>0.1.7-b2</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -29,4 +29,7 @@
         <PublishSingleFile>true</PublishSingleFile>
         <PublishReadyToRun>false</PublishReadyToRun>
     </PropertyGroup>
+  <PropertyGroup Condition="'$(SailaTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);SAILA_TEST</DefineConstants>
+  </PropertyGroup>
 </Project>
