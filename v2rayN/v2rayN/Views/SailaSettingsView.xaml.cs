@@ -35,7 +35,7 @@ public partial class SailaSettingsView : UserControl
     public void SetWide(bool wide)
     {
         _wide = wide;
-        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        rootPage.Margin = wide ? new Thickness(20, 8, 20, 12) : new Thickness(16, 14, 16, 104);
         gridHeader.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
         ArrangeCards();
     }
@@ -297,7 +297,7 @@ public partial class SailaSettingsView : UserControl
                 Height = 32,
                 CornerRadius = new CornerRadius(16),
                 Background = new SolidColorBrush(col),
-                Margin = new Thickness(6, 0, 6, 0),
+                HorizontalAlignment = HorizontalAlignment.Center,
                 Cursor = Cursors.Hand,
                 ToolTip = name
             };

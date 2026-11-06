@@ -52,6 +52,7 @@ public static class SubscriptionHandler
                 if (await ProcessDownloadResult(config, item.Id, result, hashCode, updateFunc))
                 {
                     successCount++;
+                    await ImportJsonOnlyProtocols(config, item, blProxy, downloadHandle);
                 }
 
                 await updateFunc?.Invoke(false, "-------------------------------------------------------");
@@ -66,6 +67,74 @@ public static class SubscriptionHandler
         }
 
         await updateFunc?.Invoke(successCount > 0, $"{ResUI.MsgUpdateSubscriptionEnd}");
+    }
+
+    /// <summary>
+    /// Saila: MASQUE and XDRIVE have no share link, so a 3X-UI panel offers them only in its JSON subscription.
+    /// Its address comes from the panel's subscription page ("subJsonUrl", works with custom paths), else /json/
+    /// in place of /sub/. As custom outbounds they run inside Saila's own Xray config, so the local port, routing,
+    /// statistics, TUN and ping work as for any other server. A failure here leaves the rest of the update alone.
+    /// </summary>
+    private static async Task ImportJsonOnlyProtocols(Config config, SubItem item, bool blProxy, DownloadService downloadHandle)
+    {
+        try
+        {
+            var url = Utils.GetPunycode(item.Url.TrimEx());
+            var page = await DownloadSubscriptionContent(downloadHandle, $"{url}{(url.Contains('?') ? '&' : '?')}html=1", blProxy, BrowserUserAgent);
+            var jsonUrl = FindJsonSubUrl(page) ?? (url.Contains("/sub/") ? url.Replace("/sub/", "/json/") : null);
+            if (jsonUrl == null)
+            {
+                return;
+            }
+            var text = await DownloadSubscriptionContent(downloadHandle, jsonUrl, blProxy, item.UserAgent);
+            foreach (var (remarks, outbound) in SelectJsonOnlyOutbounds(text))
+            {
+                if (V2rayFmt.ResolveOutbound(outbound, item.Remarks) is not { } profile)
+                {
+                    continue;
+                }
+                profile.Remarks = remarks ?? profile.Remarks;
+                profile.Subid = item.Id;
+                profile.IsSub = true;
+                await ConfigHandler.AddCustomOutboundServer(config, profile, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("ImportJsonOnlyProtocols", ex);
+        }
+    }
+
+    private const string BrowserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36";
+
+    public static string? FindJsonSubUrl(string? page)
+    {
+        var match = Regex.Match(page ?? string.Empty, @"""subJsonUrl"":""(https?://[^""]+)""");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+
+    /// <summary>From a JSON subscription, the proxy outbound of each MASQUE or XDRIVE config, with the config's name.</summary>
+    public static List<(string? Remarks, JsonObject Outbound)> SelectJsonOnlyOutbounds(string? json)
+    {
+        var result = new List<(string?, JsonObject)>();
+        if (json.IsNullOrEmpty() || !json.TrimStart().StartsWith('[') || JsonUtils.ParseJson(json) is not JsonArray configs)
+        {
+            return result;
+        }
+        foreach (var config in configs.OfType<JsonObject>())
+        {
+            if (config["outbounds"] is not JsonArray outbounds)
+            {
+                continue;
+            }
+            var wanted = outbounds.OfType<JsonObject>().FirstOrDefault(o =>
+                o["protocol"]?.ToString() == "masque" || o["streamSettings"]?["network"]?.ToString() == "xdrive");
+            if (wanted != null)
+            {
+                result.Add((config["remarks"]?.ToString(), wanted));
+            }
+        }
+        return result;
     }
 
     private static bool IsValidSubscription(SubItem item, string subId)

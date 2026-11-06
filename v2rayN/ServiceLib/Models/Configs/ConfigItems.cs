@@ -109,12 +109,11 @@ public class UIItem
     public bool SailaAutoRouting { get; set; } = true;
     public string? SailaRoutingCountry { get; set; }
     public int SailaServerColumns { get; set; } = 1;
-    // Window: two panes (power + list) or one; each keeps its own size.
+    // Window: two panes (power + list) or one; each keeps its own width, the height is shared.
     public bool SailaPaneOpen { get; set; } = true;
     public int SailaWideWidth { get; set; } = 1180;
-    public int SailaWideHeight { get; set; } = 740;
+    public int SailaWindowHeight { get; set; } = 820;
     public int SailaNarrowWidth { get; set; } = 480;
-    public int SailaNarrowHeight { get; set; } = 820;
     public string? SailaMode { get; set; } = "Proxy";
     // Traffic since the panel last reported usage (sub update), in Utils.HumanFy units; key = that report.
     public string? SailaUsageKey { get; set; }

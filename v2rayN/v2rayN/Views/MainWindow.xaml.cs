@@ -313,7 +313,16 @@ public partial class MainWindow
         }
     }
 
-    private void BtnNavHome_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Home);
+    // Wide: home is already on the left, so its button closes the panel.
+    private void BtnNavHome_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isWide)
+        {
+            BtnWinPane_Click(sender, e);
+            return;
+        }
+        NavigateTo(SailaPage.Home);
+    }
     private void BtnNavServers_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Servers);
     private void BtnNavAdd_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Add);
     private void BtnNavSettings_Click(object sender, RoutedEventArgs e) => NavigateTo(SailaPage.Settings);
@@ -322,14 +331,6 @@ public partial class MainWindow
         if (btnNavMenu.ContextMenu != null)
         {
             btnNavMenu.ContextMenu.PlacementTarget = btnNavMenu;
-            btnNavMenu.ContextMenu.IsOpen = true;
-        }
-    }
-    private void BtnTabMore_Click(object sender, RoutedEventArgs e)
-    {
-        if (btnNavMenu.ContextMenu != null)
-        {
-            btnNavMenu.ContextMenu.PlacementTarget = btnTabMore;
             btnNavMenu.ContextMenu.IsOpen = true;
         }
     }
@@ -371,7 +372,7 @@ public partial class MainWindow
         var showHome = _isWide || page == SailaPage.Home;
         viewHome.Visibility = showHome ? Visibility.Visible : Visibility.Collapsed;
         panelRight.Visibility = page != SailaPage.Home ? Visibility.Visible : Visibility.Collapsed;
-        colHome.Width = _isWide ? new GridLength(430) : showHome ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+        colHome.Width = _isWide ? new GridLength(480) : showHome ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
         colPane.Width = showHome && !_isWide ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
         viewServers.Visibility = page == SailaPage.Servers ? Visibility.Visible : Visibility.Collapsed;
         viewAdd.Visibility = page == SailaPage.Add ? Visibility.Visible : Visibility.Collapsed;
@@ -467,13 +468,12 @@ public partial class MainWindow
         if (e.NewSize.Width >= WideThreshold)
         {
             ui.SailaWideWidth = (int)e.NewSize.Width;
-            ui.SailaWideHeight = (int)e.NewSize.Height;
         }
         else
         {
             ui.SailaNarrowWidth = (int)e.NewSize.Width;
-            ui.SailaNarrowHeight = (int)e.NewSize.Height;
         }
+        ui.SailaWindowHeight = (int)e.NewSize.Height;
         _saveSizeTimer.Stop();
         _saveSizeTimer.Start();
     }
@@ -488,10 +488,10 @@ public partial class MainWindow
         _config.UiItem.SailaPaneOpen = wide;
         iconWinPane.Kind = wide ? PackIconKind.ArrowCollapseHorizontal : PackIconKind.ArrowExpandHorizontal;
         btnWinPane.ToolTip = wide ? "Close the side panel" : "Open the side panel";
-        cardNav.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
-        cardTabs.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
+        // The buttons stay, centered under the left column in both layouts, so nothing on the left moves.
+        cardNav.HorizontalAlignment = wide ? HorizontalAlignment.Left : HorizontalAlignment.Center;
+        cardNav.Margin = wide ? new Thickness(50, 0, 0, 16) : new Thickness(0, 0, 0, 16);
         paneDivider.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
-        viewHome.SetWide(wide);
         viewServers.SetWide(wide);
         viewAdd.SetWide(wide);
         viewSettings.SetWide(wide);
@@ -508,7 +508,7 @@ public partial class MainWindow
         _ = ConfigHandler.SaveConfig(_config);
     }
 
-    // Each layout keeps its own size. Stays on the screen when the panel opens near the right edge.
+    // Opening or closing the panel changes the width only. Stays on the screen when the panel opens near the right edge.
     private void SizeWindow(bool wide, bool center)
     {
         var ui = _config.UiItem;
@@ -516,7 +516,11 @@ public partial class MainWindow
         _sizing = true;
         var width = wide ? Math.Max(ui.SailaWideWidth, WideThreshold) : Math.Min(ui.SailaNarrowWidth, WideThreshold - 1);
         Width = Math.Min(width, area.Width);
-        Height = Math.Min(wide ? ui.SailaWideHeight : ui.SailaNarrowHeight, area.Height);
+        var height = Math.Min(ui.SailaWindowHeight, area.Height);
+        if (center || Math.Abs(Height - height) > 1)
+        {
+            Height = height;
+        }
         if (center)
         {
             Left = area.Left + (area.Width - Width) / 2;
@@ -612,8 +616,6 @@ public partial class MainWindow
         iconWinClose.Foreground = inactiveBrush;
         iconWinTray.Foreground = inactiveBrush;
         iconWinPane.Foreground = inactiveBrush;
-        cardTabs.Background = navBg;
-        cardTabs.BorderBrush = navBorder;
         paneDivider.Background = navBorder;
         Resources["SailaScrollThumb"] = new SolidColorBrush(look == "White" ? Color.FromArgb(0x55, 0x0F, 0x17, 0x2A) : Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
 
@@ -625,10 +627,6 @@ public partial class MainWindow
         // The edit form belongs to the servers.
         var onServers = _currentPage is SailaPage.Servers or SailaPage.Edit;
         SetNavButton(btnNavServers, onServers, accentBrush, inactiveBrush);
-        SetNavButton(btnTabServers, onServers, accentBrush, inactiveBrush);
-        SetNavButton(btnTabAdd, _currentPage == SailaPage.Add, accentBrush, inactiveBrush);
-        SetNavButton(btnTabSettings, _currentPage == SailaPage.Settings, accentBrush, inactiveBrush);
-        SetNavButton(btnTabMore, false, accentBrush, inactiveBrush);
         if (_editPage is FrameworkElement editPage)
         {
             SailaEditTheme.Apply(editPage);

@@ -37,6 +37,28 @@ public class SailaVersionTests
         await UpdateService.PickRelease(list, preRelease: false)!.TagName.Should().BeEqualTo("v0.1.4-b2");
     }
 
+    [Test]
+    public async Task JsonSubscription_KeepsOnlyMasqueAndXdriveProxyOutbounds()
+    {
+        const string json = """
+            [{"remarks":"Plain","outbounds":[{"protocol":"vless","tag":"proxy","settings":{},"streamSettings":{"network":"ws"}},{"protocol":"freedom","tag":"direct"}]},
+             {"remarks":"Masque","outbounds":[{"protocol":"masque","tag":"proxy","settings":{},"streamSettings":{"network":"masque"}},{"protocol":"freedom","tag":"direct"}]},
+             {"remarks":"Drive","outbounds":[{"protocol":"vless","tag":"proxy","settings":{},"streamSettings":{"network":"xdrive"}},{"protocol":"blackhole","tag":"block"}]}]
+            """;
+        var list = SubscriptionHandler.SelectJsonOnlyOutbounds(json);
+        await list.Count.Should().BeEqualTo(2);
+        await list[0].Remarks.Should().BeEqualTo("Masque");
+        await list[1].Remarks.Should().BeEqualTo("Drive");
+        await list[1].Outbound["protocol"]!.ToString().Should().BeEqualTo("vless");
+    }
+
+    [Test]
+    public async Task JsonSubscription_IgnoresAnswersThatAreNotAList()
+    {
+        await SubscriptionHandler.SelectJsonOnlyOutbounds("<html></html>").Count.Should().BeEqualTo(0);
+        await SubscriptionHandler.FindJsonSubUrl("x \"subJsonUrl\":\"https://p.example/j/1\" y").Should().BeEqualTo("https://p.example/j/1");
+    }
+
     // Through a shared VPN exit GitHub's API answers 403 with an object; this used to become version 0.0.0.
     [Test]
     public async Task RateLimitAnswer_IsNotAReleaseList()

@@ -8,7 +8,7 @@ public partial class SailaEditCustomView : ISailaEditPage
 
     public void SetWide(bool wide)
     {
-        rootEdit.Margin = wide ? new Thickness(20, 4, 20, 16) : new Thickness(16, 4, 16, 84);
+        rootEdit.Margin = wide ? new Thickness(20, 8, 20, 16) : new Thickness(16, 4, 16, 84);
     }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e) => Cancelled?.Invoke();

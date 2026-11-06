@@ -25,7 +25,7 @@ public partial class SailaAddView : UserControl
 
     public void SetWide(bool wide)
     {
-        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        rootPage.Margin = wide ? new Thickness(20, 8, 20, 12) : new Thickness(16, 14, 16, 104);
         gridHeader.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
     }
 

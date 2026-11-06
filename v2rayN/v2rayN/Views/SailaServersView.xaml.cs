@@ -86,7 +86,7 @@ public partial class SailaServersView : UserControl
     public void SetWide(bool wide)
     {
         _wide = wide;
-        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        rootPage.Margin = wide ? new Thickness(20, 8, 20, 12) : new Thickness(16, 14, 16, 104);
         btnBack.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
         btnColumns.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
         txtTitle.Margin = wide ? new Thickness(0) : new Thickness(12, 0, 0, 0);
@@ -398,7 +398,6 @@ public partial class SailaServersView : UserControl
             if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel?.ProfilesViewModel != null)
             {
                 mw.ViewModel.ProfilesViewModel.SelectedProfile = item.Model;
-                _config.IndexId = item.Model.IndexId;
                 await mw.ViewModel.ProfilesViewModel.SetDefaultServer(item.Model.IndexId);
                 mw.NavigateTo(SailaPage.Home);
                 await mw.viewHome.RefreshServerInfoAsync();
