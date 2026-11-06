@@ -184,14 +184,20 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
         if (preRelease || coreInfo?.LockedMaxVersion != null)
         {
             var url = coreInfo?.ReleaseApiUrl;
-            var result = await downloadHandle.TryDownloadString(url, blProxy, Global.AppName, cancellationToken);
-            if (result.IsNullOrEmpty())
+            var gitHubReleases = ParseApiReleases(await downloadHandle.TryDownloadString(url, blProxy, Global.AppName, cancellationToken));
+            // Saila: GitHub's API limits each IP and a VPN exit is shared by many people; its 403 body is not a
+            // list, which used to end up as version 0.0.0 and a dead download link. Try without the proxy, then
+            // the releases feed, which has no such limit (it can't tell pre-releases, so only when they're wanted).
+            if (gitHubReleases.Count == 0 && blProxy)
             {
-                return new UpdateResult(false, "");
+                gitHubReleases = ParseApiReleases(await downloadHandle.TryDownloadString(url, false, Global.AppName, cancellationToken));
+            }
+            if (gitHubReleases.Count == 0 && preRelease && coreInfo?.Url is { } releasesUrl)
+            {
+                gitHubReleases = ParseAtomReleases(await downloadHandle.TryDownloadString($"{releasesUrl.TrimEnd('/')}.atom", blProxy, Global.AppName, cancellationToken));
             }
 
-            var gitHubReleases = JsonUtils.Deserialize<List<GitHubRelease>>(result);
-            var gitHubRelease = gitHubReleases == null ? null : PickRelease(gitHubReleases, preRelease);
+            var gitHubRelease = PickRelease(gitHubReleases, preRelease);
             tagName = gitHubRelease?.TagName;
             //var body = gitHubRelease?.Body;
 
@@ -224,7 +230,35 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
 
             tagName = lastUrl?.Split("/tag/").LastOrDefault();
         }
+        if (tagName.IsNullOrEmpty())
+        {
+            return new UpdateResult(false, "Could not read the release list from GitHub. Try again later.");
+        }
         return new UpdateResult(true, new SemanticVersion(tagName));
+    }
+
+    /// <summary>Saila: the API's release list; empty for anything else, such as its rate-limit error.</summary>
+    public static List<GitHubRelease> ParseApiReleases(string? json)
+    {
+        if (json.IsNullOrEmpty() || !json.TrimStart().StartsWith('['))
+        {
+            return [];
+        }
+        return (JsonUtils.Deserialize<List<GitHubRelease>>(json) ?? []).Where(r => r.TagName.IsNotEmpty()).ToList();
+    }
+
+    /// <summary>Saila: release tags from GitHub's releases.atom feed.</summary>
+    public static List<GitHubRelease> ParseAtomReleases(string? atom)
+    {
+        if (atom.IsNullOrEmpty())
+        {
+            return [];
+        }
+        return Regex.Matches(atom, @"/releases/tag/([^""<\s]+)")
+            .Select(m => m.Groups[1].Value)
+            .Distinct()
+            .Select(tag => new GitHubRelease { TagName = tag })
+            .ToList();
     }
 
     [GeneratedRegex(@"v?(?<version>\d+\.\d+\.\d+(?:-[0-9a-zA-Z.-]+)?(?:\+[0-9a-zA-Z.-]+)?)", RegexOptions.IgnoreCase)]

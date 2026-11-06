@@ -36,4 +36,23 @@ public class SailaVersionTests
         await UpdateService.PickRelease(list, preRelease: true)!.TagName.Should().BeEqualTo("v0.1.4-b3");
         await UpdateService.PickRelease(list, preRelease: false)!.TagName.Should().BeEqualTo("v0.1.4-b2");
     }
+
+    // Through a shared VPN exit GitHub's API answers 403 with an object; this used to become version 0.0.0.
+    [Test]
+    public async Task RateLimitAnswer_IsNotAReleaseList()
+    {
+        var list = UpdateService.ParseApiReleases("{\"message\":\"API rate limit exceeded\",\"documentation_url\":\"https://docs.github.com\"}");
+        await list.Count.Should().BeEqualTo(0);
+    }
+
+    [Test]
+    public async Task AtomFeed_GivesTheTagsAndPicksTheNewest()
+    {
+        const string atom = "<feed><entry><link rel=\"alternate\" href=\"https://github.com/Plus98ir/Saila/releases/tag/v0.1.6-b1\"/><id>tag:github.com,2008:Repository/1/v0.1.6-b1</id></entry>"
+            + "<entry><link rel=\"alternate\" href=\"https://github.com/Plus98ir/Saila/releases/tag/v0.1.6-b3\"/></entry>"
+            + "<entry><link rel=\"alternate\" href=\"https://github.com/Plus98ir/Saila/releases/tag/v0.1.6-b2\"/></entry></feed>";
+        var list = UpdateService.ParseAtomReleases(atom);
+        await list.Count.Should().BeEqualTo(3);
+        await UpdateService.PickRelease(list, true)!.TagName.Should().BeEqualTo("v0.1.6-b3");
+    }
 }
