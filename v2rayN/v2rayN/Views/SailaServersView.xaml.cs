@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -29,14 +30,26 @@ public partial class SailaServersView : UserControl
     private IDisposable? _reloadSubscription;
     private SpeedtestService? _speedtest;
     private bool _sortedByPing;
+    private bool _wide;
+    private int _appliedColumns;
 
     public SailaServersView()
     {
         InitializeComponent();
+#if SAILA_TEST
+        AddTestEditButton();
+#endif
 
         Loaded += SailaServersView_Loaded;
         Unloaded += SailaServersView_Unloaded;
         IsVisibleChanged += SailaServersView_IsVisibleChanged;
+        SizeChanged += (_, _) =>
+        {
+            if (_wide)
+            {
+                ApplyColumns();
+            }
+        };
     }
 
     private void SailaServersView_Loaded(object sender, RoutedEventArgs e)
@@ -66,6 +79,18 @@ public partial class SailaServersView : UserControl
             ApplyThemeStyle();
             _ = LoadServersAsync();
         }
+    }
+
+    public string SelectedSubId => _selectedSubId;
+
+    public void SetWide(bool wide)
+    {
+        _wide = wide;
+        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        btnBack.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
+        btnColumns.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
+        txtTitle.Margin = wide ? new Thickness(0) : new Thickness(12, 0, 0, 0);
+        ApplyColumns();
     }
 
     public async Task LoadServersAsync()
@@ -183,7 +208,6 @@ public partial class SailaServersView : UserControl
         if (subs != null)
         {
             var distinctSubs = subs
-                .Where(s => s.Enabled)
                 .GroupBy(s => string.IsNullOrWhiteSpace(s.Url) ? s.Id : s.Url.Trim().ToLowerInvariant())
                 .Select(g => g.First())
                 .ToList();
@@ -196,9 +220,89 @@ public partial class SailaServersView : UserControl
                 panelChips.Children.Add(btn);
             }
         }
+
+        // Add a subscription, or a group without a link for single configs; edit the selected one.
+        panelChips.Children.Add(CreateChip($"+ {ResUI.saila_subscription}", string.Empty, false, accentBrush, look, () => EditSubAsync(new SubItem { Enabled = true }), "btnSubAdd"));
+        if (subs?.FirstOrDefault(t => t.Id == _selectedSubId) is { } selected)
+        {
+            panelChips.Children.Add(CreateChip(ResUI.menuSubEdit, string.Empty, false, accentBrush, look, () => EditSubAsync(selected), "btnSubEdit"));
+        }
     }
 
-    private Button CreateChip(string text, string subId, bool isSelected, Brush accentBrush, string look)
+    private async Task EditSubAsync(SubItem item)
+    {
+        if (Application.Current.MainWindow is not MainWindow mw)
+        {
+            return;
+        }
+        var isNew = item.Id.IsNullOrEmpty();
+        var oldUrl = item.Url;
+        var vm = new SubEditViewModel(item);
+        var saved = await mw.ShowEditPageAsync(vm);
+        if (saved)
+        {
+            _selectedSubId = vm.SelectedSource.Id;
+            if (vm.SelectedSource.Url.IsNotEmpty() && (isNew || vm.SelectedSource.Url != oldUrl) && mw.ViewModel != null)
+            {
+                await mw.ViewModel.UpdateSubscriptionProcess(vm.SelectedSource.Id, false);
+            }
+        }
+        await AfterSubsChangedAsync(mw);
+    }
+
+    private async Task AfterSubsChangedAsync(MainWindow mw)
+    {
+        var subs = await AppManager.Instance.SubItems();
+        if (_selectedSubId.IsNotEmpty() && subs?.Any(t => t.Id == _selectedSubId) != true)
+        {
+            _selectedSubId = string.Empty; // it was deleted
+        }
+        // The active server went with a deleted subscription: pick another and restart the core on it.
+        if (_config.IndexId.IsNotEmpty() && await AppManager.Instance.GetProfileItem(_config.IndexId) == null)
+        {
+            await ConfigHandler.GetDefaultServer(_config);
+            mw.ViewModel?.Reload();
+        }
+        await LoadServersAsync();
+        await mw.viewHome.RefreshServerInfoAsync();
+    }
+
+    private async void MenuMove_SubmenuOpened(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem menu || menu.DataContext is not ServerDisplayItem item)
+        {
+            return;
+        }
+        var subs = await AppManager.Instance.SubItems();
+        menu.Items.Clear();
+        menu.Items.Add(MoveItem(ResUI.saila_no_group, string.Empty, item));
+        foreach (var sub in subs ?? [])
+        {
+            menu.Items.Add(MoveItem(sub.Remarks.IsNullOrEmpty() ? sub.Url : sub.Remarks, sub.Id, item));
+        }
+    }
+
+    private MenuItem MoveItem(string title, string subId, ServerDisplayItem item)
+    {
+        var entry = new MenuItem { Header = title, IsChecked = (item.Model.Subid ?? string.Empty) == subId };
+        entry.Click += async (_, _) => await MoveAsync(item, subId);
+        return entry;
+    }
+
+    private async Task MoveAsync(ServerDisplayItem item, string subId)
+    {
+        var profile = await AppManager.Instance.GetProfileItem(item.Model.IndexId);
+        if (profile == null)
+        {
+            return;
+        }
+        // Not a subscription's own row any more: updating the target subscription must not delete it.
+        profile.IsSub = false;
+        await ConfigHandler.MoveToGroup(_config, [profile], subId);
+        await LoadServersAsync();
+    }
+
+    private Button CreateChip(string text, string subId, bool isSelected, Brush accentBrush, string look, Func<Task>? action = null, string? name = null)
     {
         var btn = new Button
         {
@@ -268,8 +372,18 @@ public partial class SailaServersView : UserControl
         btn.Template = template;
         btn.Content = border;
 
+        AutomationProperties.SetName(btn, text);
+        if (name != null)
+        {
+            btn.Name = name;
+        }
         btn.Click += async (s, e) =>
         {
+            if (action != null)
+            {
+                await action();
+                return;
+            }
             _selectedSubId = subId;
             await LoadServersAsync();
         };
@@ -288,6 +402,15 @@ public partial class SailaServersView : UserControl
                 await mw.ViewModel.ProfilesViewModel.SetDefaultServer(item.Model.IndexId);
                 mw.NavigateTo(SailaPage.Home);
                 await mw.viewHome.RefreshServerInfoAsync();
+                if (mw.IsWide)
+                {
+                    // The list stays open beside home: move the highlight.
+                    foreach (var it in _allItems)
+                    {
+                        it.IsActive = it.Model.IndexId == item.Model.IndexId;
+                    }
+                    ApplyThemeStyle();
+                }
             }
         }
     }
@@ -296,13 +419,55 @@ public partial class SailaServersView : UserControl
     {
         if (sender is MenuItem mi && mi.DataContext is ServerDisplayItem item)
         {
-            if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel?.ProfilesViewModel != null)
-            {
-                mw.ViewModel.ProfilesViewModel.SelectedProfile = item.Model;
-                await mw.ViewModel.ProfilesViewModel.EditServerAsync();
-            }
+            await EditAsync(item);
         }
     }
+
+    private async Task EditAsync(ServerDisplayItem item)
+    {
+        if (Application.Current.MainWindow is MainWindow mw && mw.ViewModel?.ProfilesViewModel != null)
+        {
+            mw.ViewModel.ProfilesViewModel.SelectedProfile = item.Model;
+            await mw.ViewModel.ProfilesViewModel.EditServerAsync();
+            await LoadServersAsync();
+            await mw.viewHome.RefreshServerInfoAsync();
+        }
+    }
+
+#if SAILA_TEST
+    // tmp\win-paneltest.ps1: synthetic right-clicks don't reach WPF, so tests edit the first row through this.
+    private void AddTestEditButton()
+    {
+        var button = new Button { Name = "btnTestEdit", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Left };
+        button.Click += async (_, _) =>
+        {
+            if (_allItems.Count > 0)
+            {
+                await EditAsync(_allItems[0]);
+            }
+        };
+        rootPage.Children.Add(button);
+        var custom = new Button { Name = "btnTestCustom", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Right };
+        custom.Click += async (_, _) =>
+        {
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                await mw.ShowEditPageAsync(new AddServer2ViewModel(new ProfileItem { ConfigType = EConfigType.Custom, Remarks = "AT Custom", Address = "custom.json" }));
+            }
+        };
+        rootPage.Children.Add(custom);
+        var move = new Button { Name = "btnTestMove", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Center };
+        move.Click += async (_, _) =>
+        {
+            var subs = await AppManager.Instance.SubItems();
+            if (_allItems.Count > 0 && subs?.FirstOrDefault(t => t.Remarks == "Panel Sub") is { } target)
+            {
+                await MoveAsync(_allItems[0], target.Id);
+            }
+        };
+        rootPage.Children.Add(move);
+    }
+#endif
 
     private async void MenuShare_Click(object sender, RoutedEventArgs e)
     {
@@ -421,11 +586,16 @@ public partial class SailaServersView : UserControl
     // One or two columns of server cards; the icon shows the layout a click switches to.
     private void ApplyColumns()
     {
-        var columns = _config.UiItem.SailaServerColumns == 2 ? 2 : 1;
-        var panel = new FrameworkElementFactory(typeof(System.Windows.Controls.Primitives.UniformGrid));
-        panel.SetValue(System.Windows.Controls.Primitives.UniformGrid.ColumnsProperty, columns);
-        panel.SetValue(VerticalAlignmentProperty, VerticalAlignment.Top);
-        listServers.ItemsPanel = new ItemsPanelTemplate(panel);
+        // Wide window: as many columns as fit. Narrow: the user's choice.
+        var columns = _wide ? Math.Max(1, (int)(ActualWidth / 300)) : _config.UiItem.SailaServerColumns == 2 ? 2 : 1;
+        if (columns != _appliedColumns)
+        {
+            _appliedColumns = columns;
+            var panel = new FrameworkElementFactory(typeof(System.Windows.Controls.Primitives.UniformGrid));
+            panel.SetValue(System.Windows.Controls.Primitives.UniformGrid.ColumnsProperty, columns);
+            panel.SetValue(VerticalAlignmentProperty, VerticalAlignment.Top);
+            listServers.ItemsPanel = new ItemsPanelTemplate(panel);
+        }
         if (iconColumns != null)
         {
             iconColumns.Kind = columns == 2 ? MaterialDesignThemes.Wpf.PackIconKind.ViewAgendaOutline : MaterialDesignThemes.Wpf.PackIconKind.ViewGridOutline;

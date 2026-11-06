@@ -9,6 +9,12 @@ public class WindowDialog : IWindowDialog
     {
         var owner = Application.Current.MainWindow;
 
+        // Saila: server forms open inside the main window, in the Saila look.
+        if (owner is v2rayN.Views.MainWindow main && vm is AddServerViewModel or AddServer2ViewModel)
+        {
+            return main.ShowEditPageAsync(vm);
+        }
+
         var viewFor = SimpleViewLocator.Instance.ResolveView(vm);
         //var viewFor = SimpleViewLocator.Instance.ResolveView<TViewModel>();
 

@@ -158,6 +158,12 @@ public partial class SailaHomeView : UserControl
         }
     }
 
+    // Wide window: no bottom nav under the cards.
+    public void SetWide(bool wide)
+    {
+        rootHome.Margin = wide ? new Thickness(20, 8, 20, 8) : new Thickness(16, 8, 16, 84);
+    }
+
     public void RefreshState()
     {
         CheckConnectionState();

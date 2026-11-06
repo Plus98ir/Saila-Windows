@@ -11,17 +11,15 @@
     xmlns:view="clr-namespace:v2rayN.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
     Title="Saila"
-    Width="480"
-    Height="820"
-    MinWidth="480"
-    MaxWidth="480"
-    MinHeight="820"
-    MaxHeight="820"
+    Width="1180"
+    Height="740"
+    MinWidth="440"
+    MinHeight="600"
     x:TypeArguments="vms:MainWindowViewModel"
     Icon="/Resources/v2rayN.ico"
     AllowsTransparency="True"
     Background="Transparent"
-    ResizeMode="CanMinimize"
+    ResizeMode="CanResize"
     WindowStyle="None"
     ShowInTaskbar="True"
     Style="{StaticResource WindowGlobal}"
@@ -33,7 +31,7 @@
             CaptionHeight="0"
             CornerRadius="0"
             GlassFrameThickness="0"
-            ResizeBorderThickness="0"
+            ResizeBorderThickness="6"
             UseAeroCaptionButtons="False" />
     </WindowChrome.WindowChrome>
     <Window.Resources>
@@ -42,6 +40,23 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Popupbox.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+            <!--  Saila: tabs of the right pane (wide window); MainWindow.SetNavButton colors them.  -->
+            <Style x:Key="SailaTabButton" TargetType="Button">
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Padding" Value="18,0" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="18">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <!--  Saila: thin rounded scrollbar without arrows or track; ApplyThemeStyle sets SailaScrollThumb per look.  -->
             <SolidColorBrush x:Key="SailaScrollThumb" Color="#55FFFFFF" />
             <Style TargetType="ScrollBar">
@@ -93,10 +108,39 @@
 
                 <!-- Pages Container (below the 32px drag strip) -->
                 <Grid x:Name="panelPages" Margin="0,32,0,0">
-                    <view:SailaHomeView x:Name="viewHome" Visibility="Visible" />
-                    <view:SailaServersView x:Name="viewServers" Visibility="Collapsed" />
-                    <view:SailaAddView x:Name="viewAdd" Visibility="Collapsed" />
-                    <view:SailaSettingsView x:Name="viewSettings" Visibility="Collapsed" />
+                    <!-- Wide window: home (power button) stays on the left, the other pages open on the right. Narrow: one page at a time. -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="colHome" Width="430" />
+                        <ColumnDefinition x:Name="colPane" Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <view:SailaHomeView x:Name="viewHome" Grid.Column="0" Visibility="Visible" />
+                    <Border x:Name="paneDivider" Grid.Column="1" Width="1" Margin="0,-32,0,0" HorizontalAlignment="Left" />
+                    <Grid x:Name="panelRight" Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border
+                            x:Name="cardTabs"
+                            Margin="20,4,20,10"
+                            Padding="4"
+                            HorizontalAlignment="Left"
+                            BorderThickness="1"
+                            CornerRadius="23">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="btnTabServers" Content="{x:Static resx:ResUI.saila_servers}" Click="BtnNavServers_Click" Style="{StaticResource SailaTabButton}" />
+                                <Button x:Name="btnTabAdd" Content="{x:Static resx:ResUI.saila_add}" Click="BtnNavAdd_Click" Style="{StaticResource SailaTabButton}" />
+                                <Button x:Name="btnTabSettings" Content="{x:Static resx:ResUI.saila_settings_title}" Click="BtnNavSettings_Click" Style="{StaticResource SailaTabButton}" />
+                                <Button x:Name="btnTabMore" Content="{x:Static resx:ResUI.saila_more}" Click="BtnTabMore_Click" Style="{StaticResource SailaTabButton}" />
+                            </StackPanel>
+                        </Border>
+                        <Grid Grid.Row="1">
+                            <view:SailaServersView x:Name="viewServers" Visibility="Collapsed" />
+                            <view:SailaAddView x:Name="viewAdd" Visibility="Collapsed" />
+                            <view:SailaSettingsView x:Name="viewSettings" Visibility="Collapsed" />
+                            <Grid x:Name="hostEdit" Visibility="Collapsed" />
+                        </Grid>
+                    </Grid>
                 </Grid>
 
                 <!-- Drag strip with minimize / close, replacing the Windows title bar -->
@@ -107,6 +151,17 @@
                     Background="Transparent"
                     MouseLeftButtonDown="StripTitle_MouseLeftButtonDown">
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button
+                            x:Name="btnWinPane"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            AutomationProperties.Name="Open or close the side panel"
+                            Click="BtnWinPane_Click"
+                            Cursor="Hand"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <materialDesign:PackIcon x:Name="iconWinPane" Width="16" Height="16" Kind="ArrowCollapseHorizontal" />
+                        </Button>
                         <Button
                             x:Name="btnWinMinimize"
                             Width="40"

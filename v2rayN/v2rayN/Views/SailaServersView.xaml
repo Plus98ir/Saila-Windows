@@ -11,7 +11,7 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,104">
+    <Grid x:Name="rootPage" HorizontalAlignment="Stretch" Margin="16,14,16,104">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Header -->
             <RowDefinition Height="Auto" /> <!-- Search Box -->
@@ -246,6 +246,9 @@
                                                 <ContextMenu Style="{StaticResource DefContextMenu}">
                                                     <MenuItem Header="{x:Static resx:ResUI.saila_edit_server}" Click="MenuEdit_Click" />
                                                     <MenuItem Header="{x:Static resx:ResUI.saila_copy_share}" Click="MenuShare_Click" />
+                                                    <MenuItem Header="{x:Static resx:ResUI.menuMoveToGroup}" SubmenuOpened="MenuMove_SubmenuOpened">
+                                                        <MenuItem Header="…" />
+                                                    </MenuItem>
                                                     <Separator />
                                                     <MenuItem Header="{x:Static resx:ResUI.saila_delete_server}" Click="MenuDelete_Click" />
                                                 </ContextMenu>

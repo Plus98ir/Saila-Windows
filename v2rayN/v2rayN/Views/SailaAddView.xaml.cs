@@ -23,6 +23,12 @@ public partial class SailaAddView : UserControl
     private MaterialDesignThemes.Wpf.PackIcon iconScan => SailaTemplate.Part<MaterialDesignThemes.Wpf.PackIcon>(btnScan, "iconScan");
     private TextBlock txtScan => SailaTemplate.Part<TextBlock>(btnScan, "txtScan");
 
+    public void SetWide(bool wide)
+    {
+        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        gridHeader.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
+    }
+
     public SailaAddView()
     {
         InitializeComponent();
@@ -34,8 +40,19 @@ public partial class SailaAddView : UserControl
             {
                 ApplyThemeStyle();
                 txtFeedback.Text = string.Empty;
+                _ = LoadGroupsAsync();
             }
         };
+    }
+
+    // "No group" plus every subscription; starts on the one open on the Servers page.
+    private async Task LoadGroupsAsync()
+    {
+        var groups = new List<SubItem> { new() { Id = string.Empty, Remarks = ResUI.saila_no_group } };
+        groups.AddRange(await AppManager.Instance.SubItems() ?? []);
+        var selectedId = (Application.Current.MainWindow as MainWindow)?.viewServers.SelectedSubId ?? string.Empty;
+        cmbGroup.ItemsSource = groups;
+        cmbGroup.SelectedItem = groups.FirstOrDefault(t => t.Id == selectedId) ?? groups[0];
     }
 
     private void BtnBack_Click(object sender, RoutedEventArgs e)
@@ -123,7 +140,9 @@ public partial class SailaAddView : UserControl
             else
             {
                 // Otherwise import as configs
-                int count = await ConfigHandler.AddBatchServers(_config, rawText, "", true);
+                // isSub false: added by hand, so updating that subscription keeps them.
+                var groupId = (cmbGroup.SelectedItem as SubItem)?.Id ?? string.Empty;
+                int count = await ConfigHandler.AddBatchServers(_config, rawText, groupId, groupId.IsNullOrEmpty());
                 if (count > 0)
                 {
                     txtFeedback.Text = $"{ResUI.saila_add_success} ({count})";
@@ -156,6 +175,9 @@ public partial class SailaAddView : UserControl
         Color deeperAccent = SailaHomeView.Deeper(accentColor, 0.25f);
         var accentGrad = new LinearGradientBrush(accentColor, deeperAccent, new Point(0, 0), new Point(1, 1));
         accentGrad.Freeze();
+        Brush groupText = look == "White" ? new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A)) : Brushes.White;
+        txtGroupLabel.Foreground = groupText;
+        cmbGroup.Foreground = groupText;
 
         btnAdd.Background = accentGrad;
 

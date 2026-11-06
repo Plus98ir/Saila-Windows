@@ -14,9 +14,23 @@ public partial class MainWindow
     public MainWindow()
     {
         InitializeComponent();
-        // Saila: fixed phone-like size; on screens shorter than 820 px it shrinks to fit instead of running off the bottom.
-        MinHeight = MaxHeight = Height = Math.Min(820, SystemParameters.WorkArea.Height);
+        // Saila: resizable; below WideThreshold it becomes the one-page layout.
+        MinHeight = Math.Min(MinHeight, SystemParameters.WorkArea.Height);
         dialogRoot.SizeChanged += (_, _) => RoundCorners();
+        SizeChanged += MainWindow_SizeChanged;
+        StateChanged += (_, _) =>
+        {
+            // Aero Snap can maximize it, but there is no restore button on the strip.
+            if (WindowState == WindowState.Maximized)
+            {
+                WindowState = WindowState.Normal;
+            }
+        };
+        _saveSizeTimer.Tick += (_, _) =>
+        {
+            _saveSizeTimer.Stop();
+            _ = ConfigHandler.SaveConfig(_config);
+        };
 
         _config = AppManager.Instance.Config;
         ThreadPool.RegisterWaitForSingleObject(App.ProgramStarted, OnProgramStarted, null, -1, false);
@@ -311,6 +325,14 @@ public partial class MainWindow
             btnNavMenu.ContextMenu.IsOpen = true;
         }
     }
+    private void BtnTabMore_Click(object sender, RoutedEventArgs e)
+    {
+        if (btnNavMenu.ContextMenu != null)
+        {
+            btnNavMenu.ContextMenu.PlacementTarget = btnTabMore;
+            btnNavMenu.ContextMenu.IsOpen = true;
+        }
+    }
     private void MenuReload_Click(object sender, RoutedEventArgs e) => ViewModel?.Reload();
     #endregion Event
 
@@ -320,13 +342,41 @@ public partial class MainWindow
 
     public SailaHomeView sailaHomeView => viewHome;
 
+    private const double WideThreshold = 800;
+    private readonly System.Windows.Threading.DispatcherTimer _saveSizeTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+    private bool _isWide;
+    private bool _sizeRestored;
+    private bool _sizing;
+    private ISailaEditPage? _editPage;
+    private TaskCompletionSource<bool>? _editResult;
+    private SailaPage _pageBeforeEdit = SailaPage.Servers;
+
+    public bool IsWide => _isWide;
+
     public void NavigateTo(SailaPage page)
     {
+        // Wide: home is always on the left, so "go home" keeps whatever is open on the right.
+        if (_isWide && page == SailaPage.Home)
+        {
+            viewHome.RefreshState();
+            ApplyThemeStyle();
+            return;
+        }
+        if (page != SailaPage.Edit)
+        {
+            CloseEditPage(false);
+        }
+
         _currentPage = page;
-        viewHome.Visibility = page == SailaPage.Home ? Visibility.Visible : Visibility.Collapsed;
+        var showHome = _isWide || page == SailaPage.Home;
+        viewHome.Visibility = showHome ? Visibility.Visible : Visibility.Collapsed;
+        panelRight.Visibility = page != SailaPage.Home ? Visibility.Visible : Visibility.Collapsed;
+        colHome.Width = _isWide ? new GridLength(430) : showHome ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+        colPane.Width = showHome && !_isWide ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
         viewServers.Visibility = page == SailaPage.Servers ? Visibility.Visible : Visibility.Collapsed;
         viewAdd.Visibility = page == SailaPage.Add ? Visibility.Visible : Visibility.Collapsed;
         viewSettings.Visibility = page == SailaPage.Settings ? Visibility.Visible : Visibility.Collapsed;
+        hostEdit.Visibility = page == SailaPage.Edit ? Visibility.Visible : Visibility.Collapsed;
 
         ApplyThemeStyle();
 
@@ -344,6 +394,140 @@ public partial class MainWindow
                 viewSettings.ApplyThemeStyle();
                 break;
         }
+
+        // Wide: home stays on screen, so a new first server or a changed subscription must reach it from here.
+        if (_isWide)
+        {
+            viewHome.RefreshState();
+        }
+    }
+
+    // Saila: AddServerWindow / AddServer2Window as a page of this window; the result is the dialog's.
+    public Task<bool> ShowEditPageAsync(object vm)
+    {
+        CloseEditPage(false);
+        ISailaEditPage page = vm switch
+        {
+            AddServerViewModel server => new SailaEditView { ViewModel = server },
+            AddServer2ViewModel custom => new SailaEditCustomView { ViewModel = custom },
+            SubEditViewModel sub => new SailaEditSubView { ViewModel = sub },
+            _ => throw new ArgumentException(vm.GetType().Name),
+        };
+        if (_currentPage != SailaPage.Edit)
+        {
+            _pageBeforeEdit = _currentPage;
+        }
+        _editPage = page;
+        _editResult = new TaskCompletionSource<bool>();
+        var result = _editResult.Task;
+        page.SetWide(_isWide);
+        page.Cancelled += () => LeaveEditPage(false);
+        if (vm is ServiceLib.Base.ICloseable closeable)
+        {
+            closeable.RequestClose += (_, _) => Application.Current.Dispatcher.Invoke(() => LeaveEditPage(true));
+        }
+        hostEdit.Children.Add((UIElement)page);
+        ShowHideWindow(true);
+        NavigateTo(SailaPage.Edit);
+        return result;
+    }
+
+    private void LeaveEditPage(bool saved)
+    {
+        CloseEditPage(saved);
+        NavigateTo(_pageBeforeEdit == SailaPage.Edit ? SailaPage.Servers : _pageBeforeEdit);
+    }
+
+    private void CloseEditPage(bool saved)
+    {
+        if (_editPage == null)
+        {
+            return;
+        }
+        hostEdit.Children.Clear();
+        hostEdit.Visibility = Visibility.Collapsed;
+        _editPage = null;
+        var result = _editResult;
+        _editResult = null;
+        result?.TrySetResult(saved);
+    }
+
+    private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!_sizeRestored)
+        {
+            return;
+        }
+        ApplyLayout(e.NewSize.Width >= WideThreshold);
+        if (_sizing || WindowState != WindowState.Normal)
+        {
+            return;
+        }
+        var ui = _config.UiItem;
+        if (e.NewSize.Width >= WideThreshold)
+        {
+            ui.SailaWideWidth = (int)e.NewSize.Width;
+            ui.SailaWideHeight = (int)e.NewSize.Height;
+        }
+        else
+        {
+            ui.SailaNarrowWidth = (int)e.NewSize.Width;
+            ui.SailaNarrowHeight = (int)e.NewSize.Height;
+        }
+        _saveSizeTimer.Stop();
+        _saveSizeTimer.Start();
+    }
+
+    private void ApplyLayout(bool wide, bool force = false)
+    {
+        if (wide == _isWide && !force)
+        {
+            return;
+        }
+        _isWide = wide;
+        _config.UiItem.SailaPaneOpen = wide;
+        iconWinPane.Kind = wide ? PackIconKind.ArrowCollapseHorizontal : PackIconKind.ArrowExpandHorizontal;
+        btnWinPane.ToolTip = wide ? "Close the side panel" : "Open the side panel";
+        cardNav.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
+        cardTabs.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
+        paneDivider.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
+        viewHome.SetWide(wide);
+        viewServers.SetWide(wide);
+        viewAdd.SetWide(wide);
+        viewSettings.SetWide(wide);
+        _editPage?.SetWide(wide);
+
+        // Closing the panel leaves the power button; opening it shows the servers. An open form stays.
+        var page = _editPage != null ? SailaPage.Edit : wide ? (_currentPage == SailaPage.Home ? SailaPage.Servers : _currentPage) : SailaPage.Home;
+        NavigateTo(page);
+    }
+
+    private void BtnWinPane_Click(object sender, RoutedEventArgs e)
+    {
+        SizeWindow(!_isWide, false);
+        _ = ConfigHandler.SaveConfig(_config);
+    }
+
+    // Each layout keeps its own size. Stays on the screen when the panel opens near the right edge.
+    private void SizeWindow(bool wide, bool center)
+    {
+        var ui = _config.UiItem;
+        var area = SystemParameters.WorkArea;
+        _sizing = true;
+        var width = wide ? Math.Max(ui.SailaWideWidth, WideThreshold) : Math.Min(ui.SailaNarrowWidth, WideThreshold - 1);
+        Width = Math.Min(width, area.Width);
+        Height = Math.Min(wide ? ui.SailaWideHeight : ui.SailaNarrowHeight, area.Height);
+        if (center)
+        {
+            Left = area.Left + (area.Width - Width) / 2;
+            Top = area.Top + (area.Height - Height) / 2;
+        }
+        else if (Left >= area.Left && Left < area.Right)
+        {
+            Left = Math.Max(area.Left, Math.Min(Left, area.Right - Width));
+            Top = Math.Max(area.Top, Math.Min(Top, area.Bottom - Height));
+        }
+        Dispatcher.BeginInvoke(() => _sizing = false, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     // Saila: 20 px rounded window, like the cards inside. The window is transparent and the content is
@@ -427,6 +611,10 @@ public partial class MainWindow
         iconWinMinimize.Foreground = inactiveBrush;
         iconWinClose.Foreground = inactiveBrush;
         iconWinTray.Foreground = inactiveBrush;
+        iconWinPane.Foreground = inactiveBrush;
+        cardTabs.Background = navBg;
+        cardTabs.BorderBrush = navBorder;
+        paneDivider.Background = navBorder;
         Resources["SailaScrollThumb"] = new SolidColorBrush(look == "White" ? Color.FromArgb(0x55, 0x0F, 0x17, 0x2A) : Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
 
         SetNavButton(btnNavHome, _currentPage == SailaPage.Home, accentBrush, inactiveBrush);
@@ -434,6 +622,17 @@ public partial class MainWindow
         SetNavButton(btnNavAdd, _currentPage == SailaPage.Add, accentBrush, inactiveBrush);
         SetNavButton(btnNavSettings, _currentPage == SailaPage.Settings, accentBrush, inactiveBrush);
         SetNavButton(btnNavMenu, false, accentBrush, inactiveBrush);
+        // The edit form belongs to the servers.
+        var onServers = _currentPage is SailaPage.Servers or SailaPage.Edit;
+        SetNavButton(btnNavServers, onServers, accentBrush, inactiveBrush);
+        SetNavButton(btnTabServers, onServers, accentBrush, inactiveBrush);
+        SetNavButton(btnTabAdd, _currentPage == SailaPage.Add, accentBrush, inactiveBrush);
+        SetNavButton(btnTabSettings, _currentPage == SailaPage.Settings, accentBrush, inactiveBrush);
+        SetNavButton(btnTabMore, false, accentBrush, inactiveBrush);
+        if (_editPage is FrameworkElement editPage)
+        {
+            SailaEditTheme.Apply(editPage);
+        }
 
         viewHome?.ApplyThemeStyle();
         viewServers?.ApplyThemeStyle();
@@ -463,7 +662,7 @@ public partial class MainWindow
             panelAdvanced.Visibility = Visibility.Collapsed;
             contentStatusBarView.Height = 0;
             contentStatusBarView.Visibility = Visibility.Hidden;
-            NavigateTo(SailaPage.Home);
+            NavigateTo(_isWide ? _currentPage : SailaPage.Home);
         }
         else
         {
@@ -505,7 +704,14 @@ public partial class MainWindow
             ShowHideWindow(false);
         }
         RestoreUI();
-        ShowHomeView(true);
+        var wide = _config.UiItem.SailaPaneOpen;
+        SizeWindow(wide, true);
+        _isWide = wide;
+        _currentPage = wide ? SailaPage.Servers : SailaPage.Home;
+        ApplyLayout(wide, true);
+        _sizeRestored = true;
+        panelHome.Visibility = Visibility.Visible;
+        panelAdvanced.Visibility = Visibility.Collapsed;
         ApplyThemeStyle();
     }
 

@@ -16,6 +16,7 @@
     <Grid>
         <!-- Stretch: Center shrank the cards to their content and left empty bands on both sides -->
         <Grid
+            x:Name="rootHome"
             HorizontalAlignment="Stretch"
             Margin="16,8,16,84">
             <Grid.RowDefinitions>

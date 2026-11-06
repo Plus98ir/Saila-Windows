@@ -1952,4 +1952,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_auto_routing_country" xml:space="preserve">
     <value>مسیریابی: {0} (خودکار)</value>
   </data>
+  <data name="saila_no_group" xml:space="preserve">
+    <value>بدون گروه</value>
+  </data>
+  <data name="saila_add_to" xml:space="preserve">
+    <value>افزودن به</value>
+  </data>
+  <data name="saila_sub_delete_confirm" xml:space="preserve">
+    <value>این ساب و سرورهایش حذف می‌شوند. برای تأیید دوباره بزنید.</value>
+  </data>
 </root>

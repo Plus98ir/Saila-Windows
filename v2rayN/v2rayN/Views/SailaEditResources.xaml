@@ -1,0 +1,134 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <!--
+        Saila: the edit pages keep the field markup of v2rayN's server windows. These keys shadow the app-wide
+        ones of the same name so every field gets the Saila look. Colors come from SailaEditTheme (per look).
+    -->
+    <Thickness x:Key="Margin4">0,4,6,4</Thickness>
+    <Thickness x:Key="MarginLeftRight4">8,0,0,0</Thickness>
+
+    <Style x:Key="ModuleTitle" TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignTextBlock}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+    </Style>
+    <Style x:Key="ToolbarTextBlock" TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignTextBlock}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="DefTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource SailaEditAccent}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SailaEditMuted}" />
+        <Setter Property="materialDesign:TextFieldAssist.UnderlineBrush" Value="{DynamicResource SailaEditAccent}" />
+    </Style>
+    <Style x:Key="SailaMultilineBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource SailaEditAccent}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SailaEditMuted}" />
+    </Style>
+    <Style x:Key="DefComboBox" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignComboBox}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SailaEditMuted}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <!--  The drop-down keeps the app theme's surface, so its items use the theme's text color, not the look's.  -->
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource MaterialDesignComboBoxItemStyle}">
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Small accent pill: Generate, Fetch certificate, Browse, Edit  -->
+    <Style x:Key="DefButton" TargetType="ButtonBase">
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource SailaEditAccent}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="15">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SailaEditCard" TargetType="Border">
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource SailaEditCardBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SailaEditCardBorder}" />
+    </Style>
+
+    <Style x:Key="SailaEditPrimary" TargetType="Button">
+        <Setter Property="Height" Value="42" />
+        <Setter Property="MinWidth" Value="110" />
+        <Setter Property="Padding" Value="26,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource SailaEditAccent}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="21">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="SailaEditSecondary" TargetType="Button" BasedOn="{StaticResource SailaEditPrimary}">
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="Background" Value="{DynamicResource SailaEditCardBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SailaEditCardBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style x:Key="SailaEditBack" TargetType="Button">
+        <Setter Property="Width" Value="38" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource SailaEditText}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        Background="{DynamicResource SailaEditCardBg}"
+                        BorderBrush="{DynamicResource SailaEditCardBorder}"
+                        BorderThickness="1"
+                        CornerRadius="19">
+                        <materialDesign:PackIcon
+                            Width="20"
+                            Height="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="ArrowLeft" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

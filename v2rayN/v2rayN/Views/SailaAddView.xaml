@@ -15,14 +15,14 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         Focusable="False">
-        <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,104">
+        <Grid x:Name="rootPage" HorizontalAlignment="Stretch" Margin="16,14,16,104">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="Auto" /> <!-- Card -->
             </Grid.RowDefinitions>
 
             <!-- 1. Header: Back Arrow, Title -->
-            <Grid Grid.Row="0" Margin="0,4,0,16">
+            <Grid x:Name="gridHeader" Grid.Row="0" Margin="0,4,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -75,6 +75,20 @@
                 BorderBrush="#3582A0FF"
                 BorderThickness="1">
                 <StackPanel>
+                    <!-- Target group for pasted configs (a subscription link makes its own) -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="txtGroupLabel" Margin="0,0,12,0" VerticalAlignment="Center" FontSize="13" Text="{x:Static resx:ResUI.saila_add_to}" />
+                        <ComboBox
+                            x:Name="cmbGroup"
+                            Grid.Column="1"
+                            DisplayMemberPath="Remarks"
+                            FontSize="13"
+                            Style="{StaticResource MaterialDesignFloatingHintComboBox}" />
+                    </Grid>
                     <!-- Input Box -->
                     <Border
                         x:Name="borderInput"

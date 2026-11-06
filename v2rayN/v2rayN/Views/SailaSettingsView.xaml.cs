@@ -31,9 +31,38 @@ public partial class SailaSettingsView : UserControl
         ("Green", "#6EE7A0", Color.FromRgb(0x6E, 0xE7, 0xA0))
     ];
 
+    // Wide window: the cards in two columns; narrow: one column, in the order of the Android settings.
+    public void SetWide(bool wide)
+    {
+        _wide = wide;
+        rootPage.Margin = wide ? new Thickness(20, 0, 20, 12) : new Thickness(16, 14, 16, 104);
+        gridHeader.Visibility = wide ? Visibility.Collapsed : Visibility.Visible;
+        ArrangeCards();
+    }
+
+    private bool _wide;
+
+    private void ArrangeCards()
+    {
+        var two = _wide && ActualWidth >= 680;
+        colRight.Width = two ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+        PlaceCard(cardConnection, 1, 0, two);
+        PlaceCard(cardAppearance, two ? 1 : 3, two ? 1 : 0, two);
+        PlaceCard(cardSubscription, 2, 0, two);
+        PlaceCard(cardMore, two ? 2 : 4, two ? 1 : 0, two);
+    }
+
+    private static void PlaceCard(Border card, int row, int column, bool wide)
+    {
+        Grid.SetRow(card, row);
+        Grid.SetColumn(card, column);
+        card.Margin = !wide ? new Thickness(0, 0, 0, 12) : column == 0 ? new Thickness(0, 0, 6, 12) : new Thickness(6, 0, 0, 12);
+    }
+
     public SailaSettingsView()
     {
         InitializeComponent();
+        SizeChanged += (_, _) => ArrangeCards();
 
         Loaded += SailaSettingsView_Loaded;
         IsVisibleChanged += (s, e) =>

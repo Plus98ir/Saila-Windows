@@ -15,7 +15,11 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         Focusable="False">
-        <Grid MaxWidth="460" HorizontalAlignment="Stretch" Margin="16,14,16,104">
+        <Grid x:Name="rootPage" HorizontalAlignment="Stretch" Margin="16,14,16,104">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="colRight" Width="0" />
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="Auto" /> <!-- Connection Card -->
@@ -25,7 +29,7 @@
             </Grid.RowDefinitions>
 
             <!-- 1. Header: Back Arrow, Title -->
-            <Grid Grid.Row="0" Margin="0,4,0,16">
+            <Grid x:Name="gridHeader" Grid.Row="0" Grid.ColumnSpan="2" Margin="0,4,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -92,8 +96,8 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtModeLabel" Text="{x:Static resx:ResUI.saila_settings_mode}" FontSize="13" Foreground="#FFFFFF" />
-                            <TextBlock x:Name="txtModeSub" Text="{x:Static resx:ResUI.saila_mode_proxy}" FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0" />
+                            <TextBlock x:Name="txtModeLabel" Text="{x:Static resx:ResUI.saila_settings_mode}" FontSize="13" Foreground="#FFFFFF" TextWrapping="Wrap" Margin="0,0,8,0" />
+                            <TextBlock x:Name="txtModeSub" Text="{x:Static resx:ResUI.saila_mode_proxy}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,2,8,0" />
                         </StackPanel>
                         <!-- Segmented Mode Buttons -->
                         <Border x:Name="borderModeContainer" Grid.Column="1" CornerRadius="16" Background="#25FFFFFF" Padding="2" VerticalAlignment="Center">
@@ -233,16 +237,16 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Button Grid.Column="0" x:Name="btnLookNexus" Content="{x:Static resx:ResUI.saila_style_nexus}" Click="BtnLook_Click" Tag="Nexus" Height="32" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button Grid.Column="1" x:Name="btnLookGlass" Content="{x:Static resx:ResUI.saila_style_glass}" Click="BtnLook_Click" Tag="Glass" Height="32" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button Grid.Column="2" x:Name="btnLookBlack" Content="{x:Static resx:ResUI.saila_style_black}" Click="BtnLook_Click" Tag="Black" Height="32" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button Grid.Column="3" x:Name="btnLookWhite" Content="{x:Static resx:ResUI.saila_style_white}" Click="BtnLook_Click" Tag="White" Height="32" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
+                            <Button Grid.Column="0" x:Name="btnLookNexus" Content="{x:Static resx:ResUI.saila_style_nexus}" Click="BtnLook_Click" Tag="Nexus" Height="32" Padding="0" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
+                            <Button Grid.Column="1" x:Name="btnLookGlass" Content="{x:Static resx:ResUI.saila_style_glass}" Click="BtnLook_Click" Tag="Glass" Height="32" Padding="0" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
+                            <Button Grid.Column="2" x:Name="btnLookBlack" Content="{x:Static resx:ResUI.saila_style_black}" Click="BtnLook_Click" Tag="Black" Height="32" Padding="0" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
+                            <Button Grid.Column="3" x:Name="btnLookWhite" Content="{x:Static resx:ResUI.saila_style_white}" Click="BtnLook_Click" Tag="White" Height="32" Padding="0" Cursor="Hand" Style="{StaticResource MaterialDesignFlatButton}" />
                         </Grid>
                     </Border>
 
                     <!-- 7 Accent Circles -->
                     <TextBlock x:Name="txtAccentTitle" Text="{x:Static resx:ResUI.saila_accent_color}" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,8" />
-                    <StackPanel x:Name="panelAccents" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16" />
+                    <UniformGrid x:Name="panelAccents" Rows="1" Margin="0,0,0,16" />
 
                     <Separator x:Name="sep4" Background="#20FFFFFF" Margin="0,0,0,12" />
 
@@ -288,9 +292,9 @@
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="150" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="txtUALabel" Grid.Column="0" Text="{x:Static resx:ResUI.saila_user_agent_title}" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                        <TextBlock x:Name="txtUALabel" Grid.Column="0" Text="{x:Static resx:ResUI.saila_user_agent_title}" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0" />
                         <ComboBox
                             Grid.Column="1"
                             x:Name="cmbUserAgent"
@@ -336,8 +340,8 @@
                         Margin="0,0,0,12" />
 
                     <!-- Check Updates Row -->
-                    <Button Height="44" Padding="8,0" Cursor="Hand" Click="BtnCheckUpdate_Click" Style="{StaticResource MaterialDesignFlatButton}">
-                        <Grid Width="400">
+                    <Button Height="44" Padding="8,0" HorizontalContentAlignment="Stretch" Cursor="Hand" Click="BtnCheckUpdate_Click" Style="{StaticResource MaterialDesignFlatButton}">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -352,8 +356,8 @@
                     <Separator x:Name="sep5" Background="#20FFFFFF" Margin="0,2,0,2" />
 
                     <!-- Backup & Restore Row -->
-                    <Button Height="44" Padding="8,0" Cursor="Hand" Click="BtnBackupRestore_Click" Style="{StaticResource MaterialDesignFlatButton}">
-                        <Grid Width="400">
+                    <Button Height="44" Padding="8,0" HorizontalContentAlignment="Stretch" Cursor="Hand" Click="BtnBackupRestore_Click" Style="{StaticResource MaterialDesignFlatButton}">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />

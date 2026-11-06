@@ -40,4 +40,8 @@
 		<ProjectReference Include="..\ServiceLib\ServiceLib.csproj" />
 	</ItemGroup>
 
+	<PropertyGroup Condition="'$(SailaTest)' == 'true'">
+		<DefineConstants>$(DefineConstants);SAILA_TEST</DefineConstants>
+	</PropertyGroup>
+
 </Project>
