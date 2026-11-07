@@ -491,7 +491,8 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         ConcurrentDictionary<string, byte> completedIds, CancellationToken ct = default)
     {
         var webProxy = new WebProxy($"socks5://{Global.Loopback}:{it.Port}");
-        var responseTime = await ConnectionHandler.GetRealPingTime(webProxy, ct);
+        // Saila: XDRIVE goes through Google Drive and needs far longer than a normal server to answer.
+        var responseTime = await ConnectionHandler.GetRealPingTime(webProxy, ct, it.ConfigType == EConfigType.Outbound ? TimeSpan.FromSeconds(30) : null);
 
         ProfileExManager.Instance.SetTestDelay(it.IndexId, responseTime);
         await UpdateFunc(it.IndexId, responseTime.ToString());

@@ -18,10 +18,13 @@ public class CoreManager
     private Func<bool, string, Task>? _updateFunc;
     private const string _tag = "CoreHandler";
 
+    public bool IsReady => _updateFunc != null;
+
     public async Task Init(Config config, Func<bool, string, Task> updateFunc)
     {
         _config = config;
         _updateFunc = updateFunc;
+        FileUtils.DeleteExpiredFiles(Utils.GetBinConfigPath(), DateTime.Now.AddHours(-1), "Test");
 
         //Copy the bin folder to the storage location (for init)
         if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1")

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -56,6 +57,7 @@ public partial class SailaServersView : UserControl
     {
         ApplyThemeStyle();
         _ = LoadServersAsync();
+        _ = ReloadWhenPingsReadyAsync();
 
         _reloadSubscription?.Dispose();
         _reloadSubscription = AppEvents.DispatcherStatisticsRequested
@@ -65,6 +67,19 @@ public partial class SailaServersView : UserControl
             {
                 UpdateDelayChips();
             });
+    }
+
+    private async Task ReloadWhenPingsReadyAsync()
+    {
+        if (CoreManager.Instance.IsReady)
+        {
+            return;
+        }
+        for (var i = 0; i < 80 && !CoreManager.Instance.IsReady; i++)
+        {
+            await Task.Delay(250);
+        }
+        await LoadServersAsync();
     }
 
     private void SailaServersView_Unloaded(object sender, RoutedEventArgs e)
@@ -126,7 +141,7 @@ public partial class SailaServersView : UserControl
 
                 string net = m.Network.IsNullOrEmpty() ? "tcp" : m.Network;
                 string sec = m.StreamSecurity.IsNullOrEmpty() ? string.Empty : $" · {m.StreamSecurity}";
-                string subLine = $"{m.ConfigType} · {net}{sec}";
+                string subLine = m.ConfigType == EConfigType.Outbound ? OutboundKind(m.Address) : $"{m.ConfigType} · {net}{sec}";
 
                 bool isActive = m.IndexId == activeId;
 
@@ -176,6 +191,27 @@ public partial class SailaServersView : UserControl
         }
         catch
         {
+        }
+    }
+
+    private static string OutboundKind(string? fileName)
+    {
+        try
+        {
+            var outbound = JsonUtils.ParseJson(File.ReadAllText(Utils.GetConfigPath(fileName)));
+            if (outbound?["protocol"]?.ToString() == "masque")
+            {
+                return "MASQUE";
+            }
+            if (outbound?["streamSettings"]?["network"]?.ToString() == "xdrive")
+            {
+                return "XDRIVE";
+            }
+            return outbound?["protocol"]?.ToString()?.ToUpperInvariant() ?? "Custom";
+        }
+        catch
+        {
+            return "Custom";
         }
     }
 

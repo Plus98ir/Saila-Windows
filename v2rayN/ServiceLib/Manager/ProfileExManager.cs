@@ -52,6 +52,7 @@ public class ProfileExManager
         {
             lstIds.Add(id);
         }
+        lstIds = lstIds.Distinct().ToList();
 
         if (lstIds.Count > 0)
         {

@@ -212,8 +212,11 @@ public static class ConfigHandler
     /// </summary>
     /// <param name="config">Configuration object to be saved</param>
     /// <returns>0 if successful, -1 if failed</returns>
+    private static readonly SemaphoreSlim _saveConfigLock = new(1, 1);
+
     public static async Task<int> SaveConfig(Config config)
     {
+        await _saveConfigLock.WaitAsync();
         try
         {
             //save temp file
@@ -234,6 +237,10 @@ public static class ConfigHandler
         {
             Logging.SaveLog(_tag, ex);
             return -1;
+        }
+        finally
+        {
+            _saveConfigLock.Release();
         }
 
         return 0;

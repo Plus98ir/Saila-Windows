@@ -135,6 +135,10 @@ public partial class SailaHomeView : UserControl
             return;
         }
         _pingRunning = true;
+        for (var i = 0; i < 60 && !CoreManager.Instance.IsReady; i++)
+        {
+            await Task.Delay(250);
+        }
         _pingIndexId = server.IndexId;
         _pingAt = DateTime.UtcNow;
         try
