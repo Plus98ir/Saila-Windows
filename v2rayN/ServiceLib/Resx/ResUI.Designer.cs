@@ -5732,5 +5732,15 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("saila_about", resourceCulture) ?? "saila_about";
             }
         }
+        public static string saila_sub_move_earlier {
+            get {
+                return ResourceManager.GetString("saila_sub_move_earlier", resourceCulture) ?? "saila_sub_move_earlier";
+            }
+        }
+        public static string saila_sub_move_later {
+            get {
+                return ResourceManager.GetString("saila_sub_move_later", resourceCulture) ?? "saila_sub_move_later";
+            }
+        }
     }
 }

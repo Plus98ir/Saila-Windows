@@ -8,6 +8,7 @@ using ReactiveUI;
 using ServiceLib.Common;
 using ServiceLib.Enums;
 using ServiceLib.Handler;
+using ServiceLib.Helper;
 using ServiceLib.Manager;
 using ServiceLib.Models.Configs;
 using ServiceLib.Models.Dto;
@@ -255,10 +256,132 @@ public partial class SailaServersView : UserControl
                 var btn = CreateChip(title, sub.Id, isSel, accentBrush, look);
                 var editItem = new MenuItem { Header = ResUI.menuSubEdit };
                 editItem.Click += async (_, _) => await EditSubAsync(sub);
-                btn.ContextMenu = new ContextMenu { Style = (Style)FindResource("DefContextMenu"), Items = { editItem } };
+                var earlierItem = new MenuItem { Header = ResUI.saila_sub_move_earlier };
+                earlierItem.Click += async (_, _) => await MoveSubByAsync(sub.Id, -1);
+                var laterItem = new MenuItem { Header = ResUI.saila_sub_move_later };
+                laterItem.Click += async (_, _) => await MoveSubByAsync(sub.Id, 1);
+                btn.ContextMenu = new ContextMenu { Style = (Style)FindResource("DefContextMenu"), Items = { editItem, earlierItem, laterItem } };
+                AttachChipDrag(btn, sub.Id);
                 panelChips.Children.Add(btn);
             }
         }
+    }
+
+    // Saila: press a subscription chip and drag it onto another one to change the order (saved in SubItem.Sort).
+    private const string ChipDragFormat = "SailaSubId";
+    private Point _chipDragStart;
+    private Button? _chipDragSource;
+    private bool _chipDragged;
+
+    private void AttachChipDrag(Button btn, string subId)
+    {
+        btn.AllowDrop = true;
+        btn.PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            _chipDragStart = e.GetPosition(panelChips);
+            _chipDragSource = btn;
+            _chipDragged = false;
+        };
+        btn.PreviewMouseMove += (_, e) =>
+        {
+            if (_chipDragSource != btn || e.LeftButton != MouseButtonState.Pressed)
+            {
+                return;
+            }
+            var delta = e.GetPosition(panelChips) - _chipDragStart;
+            if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance
+                && Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance)
+            {
+                return;
+            }
+            _chipDragSource = null;
+            _chipDragged = true;
+            btn.ReleaseMouseCapture();
+            btn.Opacity = 0.5;
+            try
+            {
+                DragDrop.DoDragDrop(btn, new DataObject(ChipDragFormat, subId), DragDropEffects.Move);
+            }
+            finally
+            {
+                btn.Opacity = 1;
+            }
+        };
+        btn.DragOver += (_, e) =>
+        {
+            e.Effects = e.Data.GetDataPresent(ChipDragFormat) ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        };
+        btn.Drop += async (_, e) =>
+        {
+            e.Handled = true;
+            if (e.Data.GetData(ChipDragFormat) is string sourceId && sourceId != subId)
+            {
+                // Dropped on the right half of a chip: after it, else before it (mirrored in RTL).
+                var after = e.GetPosition(btn).X > btn.ActualWidth / 2;
+                if (FlowDirection == FlowDirection.RightToLeft)
+                {
+                    after = !after;
+                }
+                await MoveSubToAsync(sourceId, subId, after);
+            }
+        };
+    }
+
+    /// <summary>True once after a drag, so the chip's Click that may follow does not change the selection.</summary>
+    private bool ConsumeChipDrag()
+    {
+        var dragged = _chipDragged;
+        _chipDragged = false;
+        return dragged;
+    }
+
+    private async Task MoveSubByAsync(string subId, int step)
+    {
+        var ids = (await AppManager.Instance.SubItems() ?? []).Select(t => t.Id).ToList();
+        var from = ids.IndexOf(subId);
+        if (from < 0 || from + step < 0 || from + step >= ids.Count)
+        {
+            return;
+        }
+        (ids[from], ids[from + step]) = (ids[from + step], ids[from]);
+        await SaveSubOrderAsync(ids);
+    }
+
+    private async Task MoveSubToAsync(string sourceId, string targetId, bool after)
+    {
+        var ids = (await AppManager.Instance.SubItems() ?? []).Select(t => t.Id).ToList();
+        if (!ids.Remove(sourceId))
+        {
+            return;
+        }
+        var target = ids.IndexOf(targetId);
+        if (target < 0)
+        {
+            return;
+        }
+        ids.Insert(after ? target + 1 : target, sourceId);
+        await SaveSubOrderAsync(ids);
+    }
+
+    private async Task SaveSubOrderAsync(List<string> orderedIds)
+    {
+        var subs = await AppManager.Instance.SubItems() ?? [];
+        var changed = new List<SubItem>();
+        foreach (var sub in subs)
+        {
+            var sort = orderedIds.IndexOf(sub.Id) + 1;
+            if (sort > 0 && sub.Sort != sort)
+            {
+                sub.Sort = sort;
+                changed.Add(sub);
+            }
+        }
+        if (changed.Count > 0)
+        {
+            await SQLiteHelper.Instance.UpdateAllAsync(changed);
+        }
+        await LoadServersAsync();
     }
 
     /// <summary>A subscription, or a group for single configs when it has no link; opened from the Add page.</summary>
@@ -411,6 +534,10 @@ public partial class SailaServersView : UserControl
         AutomationProperties.SetName(btn, text);
         btn.Click += async (s, e) =>
         {
+            if (ConsumeChipDrag())
+            {
+                return;
+            }
             _selectedSubId = subId;
             await LoadServersAsync();
         };
@@ -501,6 +628,16 @@ public partial class SailaServersView : UserControl
             }
         };
         rootPage.Children.Add(move);
+        // tmp\win-subordertest.ps1: the chip's menu item "Move later" for the selected subscription.
+        var subLater = new Button { Name = "btnTestSubLater", Width = 1, Height = 1, Opacity = 0, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom };
+        subLater.Click += async (_, _) =>
+        {
+            if (_selectedSubId.IsNotEmpty())
+            {
+                await MoveSubByAsync(_selectedSubId, 1);
+            }
+        };
+        rootPage.Children.Add(subLater);
     }
 #endif
 

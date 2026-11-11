@@ -2093,4 +2093,10 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_sub_delete_confirm" xml:space="preserve">
     <value>This deletes the subscription and its servers. Press again to confirm.</value>
   </data>
+  <data name="saila_sub_move_earlier" xml:space="preserve">
+    <value>Move earlier</value>
+  </data>
+  <data name="saila_sub_move_later" xml:space="preserve">
+    <value>Move later</value>
+  </data>
 </root>
