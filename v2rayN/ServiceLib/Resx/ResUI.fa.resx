@@ -1967,4 +1967,10 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="saila_sub_move_later" xml:space="preserve">
     <value>جابه‌جایی به بعد</value>
   </data>
+  <data name="saila_show_all_chip" xml:space="preserve">
+    <value>نمایش دکمهٔ «همه»</value>
+  </data>
+  <data name="saila_show_all_chip_hint" xml:space="preserve">
+    <value>صفحهٔ سرورها: یک دکمه با سرورهای همهٔ اشتراک‌ها</value>
+  </data>
 </root>

@@ -317,6 +317,27 @@
                         Visibility="Collapsed"
                         TextChanged="TxtCustomUA_TextChanged"
                         materialDesign:HintAssist.Hint="Custom User-Agent string…" />
+
+                    <Separator x:Name="sepShowAll" Background="#20FFFFFF" Margin="0,12,0,12" />
+
+                    <!-- Servers page: the "All" chip on or off -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtShowAllLabel" Text="{x:Static resx:ResUI.saila_show_all_chip}" FontSize="13" Foreground="#FFFFFF" />
+                            <TextBlock x:Name="txtShowAllHint" Text="{x:Static resx:ResUI.saila_show_all_chip_hint}" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,2,8,0" />
+                        </StackPanel>
+                        <ToggleButton
+                            Grid.Column="1"
+                            x:Name="togShowAll"
+                            AutomationProperties.Name="Show All chip"
+                            Cursor="Hand"
+                            Checked="TogShowAll_Changed"
+                            Unchecked="TogShowAll_Changed" />
+                    </Grid>
                 </StackPanel>
             </Border>
 

@@ -109,6 +109,8 @@ public class UIItem
     public bool SailaAutoRouting { get; set; } = true;
     public string? SailaRoutingCountry { get; set; }
     public int SailaServerColumns { get; set; } = 1;
+    // Servers page: the "All" chip in front of the subscription chips.
+    public bool SailaShowAllChip { get; set; } = true;
     // Window: two panes (power + list) or one; each keeps its own width, the height is shared.
     public bool SailaPaneOpen { get; set; } = true;
     public int SailaWideWidth { get; set; } = 1180;

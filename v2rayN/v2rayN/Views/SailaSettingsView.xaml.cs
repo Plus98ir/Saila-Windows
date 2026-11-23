@@ -114,6 +114,8 @@ public partial class SailaSettingsView : UserControl
         // Auto Run
         togAutoRun.IsChecked = _config.GuiItem.AutoRun;
 
+        togShowAll.IsChecked = _config.UiItem.SailaShowAllChip;
+
         // Local Port
         int port = AppManager.Instance.GetLocalPort(EInboundProtocol.socks);
         txtLocalPort.Text = port.ToString();
@@ -244,6 +246,22 @@ public partial class SailaSettingsView : UserControl
         _config.GuiItem.AutoRun = isRun;
         await AutoStartupHandler.UpdateTask(_config);
         await ConfigHandler.SaveConfig(_config);
+    }
+
+    // Checked/Unchecked (not Click) so it also reacts to UI automation; setting it at load changes nothing.
+    private async void TogShowAll_Changed(object sender, RoutedEventArgs e)
+    {
+        var on = togShowAll.IsChecked == true;
+        if (_config.UiItem.SailaShowAllChip == on)
+        {
+            return;
+        }
+        _config.UiItem.SailaShowAllChip = on;
+        await ConfigHandler.SaveConfig(_config);
+        if (Application.Current.MainWindow is MainWindow mw)
+        {
+            await mw.viewServers.LoadServersAsync();
+        }
     }
 
     private void UpdateLookButtons(string activeLook)
@@ -532,6 +550,8 @@ public partial class SailaSettingsView : UserControl
         txtModeLabel.Foreground = textPrimary;
         txtRoutingLabel.Foreground = textPrimary;
         txtAutoRunLabel.Foreground = textPrimary;
+        txtShowAllLabel.Foreground = textPrimary;
+        txtShowAllHint.Foreground = textSecondary;
         txtAutoRoutingLabel.Foreground = textPrimary;
         txtAutoRoutingStatus.Foreground = textSecondary;
         txtLocalPortLabel.Foreground = textPrimary;
@@ -569,6 +589,7 @@ public partial class SailaSettingsView : UserControl
         sep2.Background = sepBrush;
         sepAutoRouting.Background = sepBrush;
         sep3.Background = sepBrush;
+        sepShowAll.Background = sepBrush;
         sep4.Background = sepBrush;
         sep5.Background = sepBrush;
         sep7.Background = sepBrush;

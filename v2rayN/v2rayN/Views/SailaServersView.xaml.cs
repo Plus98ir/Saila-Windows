@@ -97,7 +97,10 @@ public partial class SailaServersView : UserControl
         }
     }
 
-    public string SelectedSubId => _selectedSubId;
+    // Chip of the servers that belong to no subscription (shown when the "All" chip is switched off).
+    private const string NoGroupChipId = "nogroup";
+
+    public string SelectedSubId => _selectedSubId == NoGroupChipId ? string.Empty : _selectedSubId;
 
     public void SetWide(bool wide)
     {
@@ -115,7 +118,12 @@ public partial class SailaServersView : UserControl
         {
             await LoadChipsAsync();
 
-            var rawModels = await AppManager.Instance.ProfileModels(_selectedSubId, txtSearch.Text.Trim());
+            var rawModels = await AppManager.Instance.ProfileModels(SelectedSubId, txtSearch.Text.Trim()) ?? [];
+            if (_selectedSubId == NoGroupChipId)
+            {
+                var subIds = (await AppManager.Instance.SubItems() ?? []).Select(t => t.Id).ToHashSet();
+                rawModels = rawModels.Where(t => t.Subid.IsNullOrEmpty() || !subIds.Contains(t.Subid)).ToList();
+            }
             var items = new List<ServerDisplayItem>();
 
             string activeId = _config.IndexId;
@@ -237,18 +245,38 @@ public partial class SailaServersView : UserControl
         var accentBrush = new SolidColorBrush(accentColor);
         accentBrush.Freeze();
 
-        // 1. "All" Chip
-        var btnAll = CreateChip(ResUI.saila_all_servers, string.Empty, _selectedSubId.IsNullOrEmpty(), accentBrush, look);
-        panelChips.Children.Add(btnAll);
+        var distinctSubs = (subs ?? [])
+            .GroupBy(s => string.IsNullOrWhiteSpace(s.Url) ? s.Id : s.Url.Trim().ToLowerInvariant())
+            .Select(g => g.First())
+            .ToList();
+
+        // 1. "All" chip, or (switched off in Settings) a "No group" chip for servers outside every subscription.
+        if (_config.UiItem.SailaShowAllChip)
+        {
+            if (_selectedSubId == NoGroupChipId)
+            {
+                _selectedSubId = string.Empty;
+            }
+            var btnAll = CreateChip(ResUI.saila_all_servers, string.Empty, _selectedSubId.IsNullOrEmpty(), accentBrush, look);
+            panelChips.Children.Add(btnAll);
+        }
+        else
+        {
+            var subIds = (subs ?? []).Select(t => t.Id).ToHashSet();
+            var hasUngrouped = (await AppManager.Instance.ProfileModels(string.Empty, string.Empty) ?? [])
+                .Any(t => t.Subid.IsNullOrEmpty() || !subIds.Contains(t.Subid));
+            if (_selectedSubId.IsNullOrEmpty() || (_selectedSubId == NoGroupChipId && !hasUngrouped))
+            {
+                _selectedSubId = distinctSubs.FirstOrDefault()?.Id ?? (hasUngrouped ? NoGroupChipId : string.Empty);
+            }
+            if (hasUngrouped)
+            {
+                panelChips.Children.Add(CreateChip(ResUI.saila_no_group, NoGroupChipId, _selectedSubId == NoGroupChipId, accentBrush, look));
+            }
+        }
 
         // 2. Subscription Chips - distinct by URL or ID (no duplicates)
-        if (subs != null)
         {
-            var distinctSubs = subs
-                .GroupBy(s => string.IsNullOrWhiteSpace(s.Url) ? s.Id : s.Url.Trim().ToLowerInvariant())
-                .Select(g => g.First())
-                .ToList();
-
             foreach (var sub in distinctSubs)
             {
                 string title = sub.Remarks.IsNullOrEmpty() ? sub.Url : sub.Remarks;

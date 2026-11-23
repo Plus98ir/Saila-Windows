@@ -2180,9 +2180,50 @@ public static class ConfigHandler
                     await StatisticsManager.Instance.CloneServerStatItem(existItem.IndexId, item.IndexId);
                 }
             }
+            await KeepTestResults(lstOriSub, lstSub);
         }
 
         return counter;
+    }
+
+    /// <summary>
+    /// Saila: a subscription update re-adds every server under a new id; give each one the last ping of
+    /// its old copy. Same settings first (the name may change with the remaining traffic), then same
+    /// address, port and name (3X-UI picks a random Reality shortId per request), then for Custom/Outbound
+    /// (MASQUE, XDRIVE, their config file is renamed) the same name. Each old copy is used once.
+    /// </summary>
+    public static async Task KeepTestResults(List<ProfileItem>? oldItems, List<ProfileItem>? newItems)
+    {
+        if (oldItems is not { Count: > 0 } || newItems is not { Count: > 0 })
+        {
+            return;
+        }
+        var oldIds = oldItems.Select(t => t.IndexId).ToHashSet();
+        var unused = oldItems.ToList();
+        var pending = newItems.Where(t => !oldIds.Contains(t.IndexId)).ToList();
+        var passes = new List<Func<ProfileItem, ProfileItem, bool>>
+        {
+            (o, n) => CompareProfileItem(o, n, true),
+            (o, n) => CompareProfileItem(o, n, false),
+            (o, n) => o.ConfigType == n.ConfigType && o.Address == n.Address && o.Port == n.Port && n.Remarks.IsNotEmpty() && o.Remarks == n.Remarks,
+            (o, n) => o.ConfigType == n.ConfigType && n.ConfigType is EConfigType.Custom or EConfigType.Outbound && n.Remarks.IsNotEmpty() && o.Remarks == n.Remarks,
+        };
+        foreach (var same in passes)
+        {
+            foreach (var item in pending.ToList())
+            {
+                var old = unused.FirstOrDefault(o => same(o, item));
+                if (old == null)
+                {
+                    continue;
+                }
+                ProfileExManager.Instance.CopyTestResult(old.IndexId, item.IndexId);
+                unused.Remove(old);
+                pending.Remove(item);
+            }
+        }
+        // Written to the db now, not only by the 20-minute timer or at exit.
+        await ProfileExManager.Instance.SaveTo();
     }
 
     #endregion Batch add servers

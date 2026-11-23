@@ -181,6 +181,26 @@ public class ProfileExManager
         IndexIdEnqueue(indexId);
     }
 
+    /// <summary>Saila: gives a re-added server (new id after a sub update) the test results of its old copy.</summary>
+    public void CopyTestResult(string fromIndexId, string toIndexId)
+    {
+        if (fromIndexId.IsNullOrEmpty() || toIndexId.IsNullOrEmpty() || fromIndexId == toIndexId)
+        {
+            return;
+        }
+        var from = _lstProfileEx.FirstOrDefault(t => t.IndexId == fromIndexId);
+        if (from == null || (from.Delay == 0 && from.Speed == 0))
+        {
+            return;
+        }
+        var to = GetProfileExItem(toIndexId);
+        to.Delay = from.Delay;
+        to.Speed = from.Speed;
+        to.Message = from.Message;
+        to.IpInfo = from.IpInfo;
+        IndexIdEnqueue(toIndexId);
+    }
+
     public void SetSort(string indexId, int sort)
     {
         var profileEx = GetProfileExItem(indexId);

@@ -49,10 +49,14 @@ public static class SubscriptionHandler
                 }
 
                 // Process download result
+                // Saila: MASQUE/XDRIVE come back after the main import has removed them; keep their pings.
+                var oldJsonOnly = (await AppManager.Instance.ProfileItems(item.Id) ?? [])
+                    .Where(t => t.ConfigType is EConfigType.Custom or EConfigType.Outbound).ToList();
                 if (await ProcessDownloadResult(config, item.Id, result, hashCode, updateFunc))
                 {
                     successCount++;
                     await ImportJsonOnlyProtocols(config, item, blProxy, downloadHandle);
+                    await ConfigHandler.KeepTestResults(oldJsonOnly, await AppManager.Instance.ProfileItems(item.Id));
                 }
 
                 await updateFunc?.Invoke(false, "-------------------------------------------------------");

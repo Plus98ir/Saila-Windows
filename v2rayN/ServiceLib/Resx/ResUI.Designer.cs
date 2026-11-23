@@ -5564,6 +5564,16 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("saila_search_servers", resourceCulture) ?? "saila_search_servers";
             }
         }
+        public static string saila_show_all_chip {
+            get {
+                return ResourceManager.GetString("saila_show_all_chip", resourceCulture) ?? "saila_show_all_chip";
+            }
+        }
+        public static string saila_show_all_chip_hint {
+            get {
+                return ResourceManager.GetString("saila_show_all_chip_hint", resourceCulture) ?? "saila_show_all_chip_hint";
+            }
+        }
         public static string saila_all_servers {
             get {
                 return ResourceManager.GetString("saila_all_servers", resourceCulture) ?? "saila_all_servers";
