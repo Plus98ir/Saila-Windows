@@ -361,7 +361,7 @@
                         Margin="0,0,0,12" />
 
                     <!-- Check Updates Row -->
-                    <Button Height="44" Padding="8,0" HorizontalContentAlignment="Stretch" Cursor="Hand" Click="BtnCheckUpdate_Click" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button x:Name="btnCheckUpdate" AutomationProperties.Name="Check for update" Height="44" Padding="8,0" HorizontalContentAlignment="Stretch" Cursor="Hand" Click="BtnCheckUpdate_Click" Style="{StaticResource MaterialDesignFlatButton}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />

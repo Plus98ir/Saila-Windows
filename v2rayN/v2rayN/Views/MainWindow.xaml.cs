@@ -298,10 +298,22 @@ public partial class MainWindow
         // Saila: its own dialog (Saila, Xray core, geo files) instead of v2rayN's core list.
         if (ViewModel?.CheckUpdateViewModel is { } vm)
         {
-            DialogHost.Show(new SailaUpdateView(vm), "RootDialog");
+            DialogHost.Show(FitDialog(new SailaUpdateView(vm)), "RootDialog");
         }
 
         AppEvents.HasUpdateNotified.Publish(false);
+    }
+
+    // Saila dialogs: their XAML width is the most they take; in a narrow window they shrink to fit
+    // (a fixed 420 cut off the right side of the update dialog in the 440 px window).
+    private T FitDialog<T>(T view) where T : FrameworkElement
+    {
+        var max = double.IsNaN(view.Width) ? 420 : view.Width;
+        // The host keeps DialogMargin free on each side; the rest is what the card may use.
+        var host = dialogRoot.ActualWidth > 0 ? dialogRoot.ActualWidth : ActualWidth - 16;
+        var room = host - dialogRoot.DialogMargin.Left - dialogRoot.DialogMargin.Right - 8;
+        view.Width = Math.Max(280, Math.Min(max, room));
+        return view;
     }
 
     public void MenuBackupAndRestore_Click(object sender, RoutedEventArgs e)
@@ -309,7 +321,7 @@ public partial class MainWindow
         // Saila: its own local-file dialog instead of v2rayN's (which also offered WebDAV).
         if (ViewModel?.BackupAndRestoreViewModel is { } vm)
         {
-            DialogHost.Show(new SailaBackupView(vm), "RootDialog");
+            DialogHost.Show(FitDialog(new SailaBackupView(vm)), "RootDialog");
         }
     }
 

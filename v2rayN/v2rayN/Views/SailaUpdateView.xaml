@@ -32,8 +32,10 @@
                     x:Name="txtPreRelease"
                     VerticalAlignment="Center"
                     FontSize="13"
+                    Margin="0,0,8,0"
                     Foreground="#FFFFFF"
-                    Text="Check pre-release versions of Saila" />
+                    Text="Check pre-release versions of Saila"
+                    TextWrapping="Wrap" />
                 <ToggleButton
                     x:Name="togPreRelease"
                     Grid.Column="1"
@@ -41,7 +43,7 @@
                     Style="{StaticResource MaterialDesignSwitchToggleButton}" />
             </Grid>
 
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+            <WrapPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button
                     x:Name="btnClose"
                     Margin="0,0,8,0"
@@ -63,7 +65,7 @@
                     Click="BtnUpdate_Click"
                     Content="Check and update"
                     materialDesign:ButtonAssist.CornerRadius="18" />
-            </StackPanel>
+            </WrapPanel>
         </StackPanel>
     </Border>
 </UserControl>
