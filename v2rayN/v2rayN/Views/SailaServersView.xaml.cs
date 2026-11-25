@@ -99,6 +99,8 @@ public partial class SailaServersView : UserControl
 
     // Chip of the servers that belong to no subscription (shown when the "All" chip is switched off).
     private const string NoGroupChipId = "nogroup";
+    // Newest LoadServersAsync call; an older one that is still awaiting stops instead of adding chips or rows again.
+    private int _loadGen;
 
     public string SelectedSubId => _selectedSubId == NoGroupChipId ? string.Empty : _selectedSubId;
 
@@ -116,7 +118,11 @@ public partial class SailaServersView : UserControl
     {
         try
         {
-            await LoadChipsAsync();
+            var gen = ++_loadGen;
+            if (!await LoadChipsAsync(gen))
+            {
+                return;
+            }
 
             var rawModels = await AppManager.Instance.ProfileModels(SelectedSubId, txtSearch.Text.Trim()) ?? [];
             if (_selectedSubId == NoGroupChipId)
@@ -168,6 +174,10 @@ public partial class SailaServersView : UserControl
                 items.Add(displayItem);
             }
 
+            if (gen != _loadGen)
+            {
+                return;
+            }
             _allItems = _sortedByPing ? items.OrderBy(PingKey).ToList() : items;
             listServers.ItemsSource = _allItems;
 
@@ -233,10 +243,19 @@ public partial class SailaServersView : UserControl
         }
     }
 
-    private async Task LoadChipsAsync()
+    private async Task<bool> LoadChipsAsync(int gen)
     {
-        // Read the subs before touching the panel: two overlapping calls used to both Clear() and then both add.
+        // Overlapping calls (Loaded + IsVisibleChanged + pings ready) used to both Clear() and then both add,
+        // so every chip showed twice. Do every await first, let only the newest call build, and build without awaiting.
         var subs = await AppManager.Instance.SubItems();
+        var subIdSet = (subs ?? []).Select(t => t.Id).ToHashSet();
+        var hasUngrouped = !_config.UiItem.SailaShowAllChip
+            && (await AppManager.Instance.ProfileModels(string.Empty, string.Empty) ?? [])
+                .Any(t => t.Subid.IsNullOrEmpty() || !subIdSet.Contains(t.Subid));
+        if (gen != _loadGen)
+        {
+            return false;
+        }
         panelChips.Children.Clear();
 
         string look = _config.UiItem.SailaLook ?? "Nexus";
@@ -262,9 +281,6 @@ public partial class SailaServersView : UserControl
         }
         else
         {
-            var subIds = (subs ?? []).Select(t => t.Id).ToHashSet();
-            var hasUngrouped = (await AppManager.Instance.ProfileModels(string.Empty, string.Empty) ?? [])
-                .Any(t => t.Subid.IsNullOrEmpty() || !subIds.Contains(t.Subid));
             if (_selectedSubId.IsNullOrEmpty() || (_selectedSubId == NoGroupChipId && !hasUngrouped))
             {
                 _selectedSubId = distinctSubs.FirstOrDefault()?.Id ?? (hasUngrouped ? NoGroupChipId : string.Empty);
@@ -293,6 +309,7 @@ public partial class SailaServersView : UserControl
                 panelChips.Children.Add(btn);
             }
         }
+        return true;
     }
 
     // Saila: press a subscription chip and drag it onto another one to change the order (saved in SubItem.Sort).
