@@ -77,4 +77,33 @@ public class SailaVersionTests
         await list.Count.Should().BeEqualTo(3);
         await UpdateService.PickRelease(list, true)!.TagName.Should().BeEqualTo("v0.1.6-b3");
     }
+
+    // 2026-11-25: v0.1.8-b4 was Android-only and carried the b3 zip; Windows took it as "latest" and would
+    // reinstall b3 on every check.
+    [Test]
+    public async Task AndroidOnlyRelease_IsSkippedByWindows()
+    {
+        var list = new List<GitHubRelease>
+        {
+            new() { TagName = "v0.1.8-b4", Name = "Saila 0.1.8-b4 (Android)" },
+            new() { TagName = "v0.1.8-b3", Name = "Saila 0.1.8-b3", Body = "<!-- android -->a<!-- /android --><!-- windows -->w<!-- /windows -->" },
+            new() { TagName = "v0.1.8-b2", Name = "Saila 0.1.8-b2 (Windows)" },
+        };
+        await UpdateService.PickRelease(list, preRelease: false, skipAndroidOnly: true)!.TagName.Should().BeEqualTo("v0.1.8-b3");
+        await UpdateService.PickRelease(list, preRelease: false)!.TagName.Should().BeEqualTo("v0.1.8-b4");
+        await UpdateService.IsAndroidOnly(new GitHubRelease { TagName = "v1.0.0-b1", Body = "<!-- android -->only<!-- /android -->" }).Should().BeTrue();
+        await UpdateService.IsAndroidOnly(list[2]).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task AtomFeed_KeepsTheTitlesSoAndroidOnlyCanBeSkipped()
+    {
+        const string atom = "<feed><title>Release notes from Saila</title>"
+            + "<entry><id>tag:github.com,2008:Repository/1/v0.1.8-b4</id><link rel=\"alternate\" type=\"text/html\" href=\"https://github.com/Plus98ir/Saila/releases/tag/v0.1.8-b4\"/><title>Saila 0.1.8-b4 (Android)</title></entry>"
+            + "<entry><link rel=\"alternate\" href=\"https://github.com/Plus98ir/Saila/releases/tag/v0.1.8-b3\"/><title>Saila 0.1.8-b3</title></entry></feed>";
+        var list = UpdateService.ParseAtomReleases(atom);
+        await list.Count.Should().BeEqualTo(2);
+        await list[0].Name.Should().BeEqualTo("Saila 0.1.8-b4 (Android)");
+        await UpdateService.PickRelease(list, preRelease: false, skipAndroidOnly: true)!.TagName.Should().BeEqualTo("v0.1.8-b3");
+    }
 }

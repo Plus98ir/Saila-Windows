@@ -1,3 +1,4 @@
+using System.Net;
 namespace ServiceLib.Services;
 
 public partial class UpdateService(Config config, Func<bool, string, Task> updateFunc)
@@ -6,8 +7,17 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
     /// Saila: the highest version among the releases (pre-releases only when asked). GitHub's /releases
     /// list is not ordered by version (on 2026-10-31 it gave b2, b1, then the b3 pre-release).
     /// </summary>
-    public static GitHubRelease? PickRelease(IEnumerable<GitHubRelease> releases, bool preRelease) =>
-        releases.Where(r => preRelease || !r.Prerelease).MaxBy(r => new SemanticVersion(r.TagName));
+    public static GitHubRelease? PickRelease(IEnumerable<GitHubRelease> releases, bool preRelease, bool skipAndroidOnly = false) =>
+        releases.Where(r => (preRelease || !r.Prerelease) && !(skipAndroidOnly && IsAndroidOnly(r))).MaxBy(r => new SemanticVersion(r.TagName));
+
+    /// <summary>
+    /// Saila: a release made for Android only (title "… (Android)", or notes with an android part and no windows
+    /// part). Its zip is the previous Windows build, so Windows must not offer it (it would reinstall the same build
+    /// on every check). The feed drops the HTML comments of the notes, so the title is what works there.
+    /// </summary>
+    public static bool IsAndroidOnly(GitHubRelease r) =>
+        (r.Name?.Contains("(Android)", StringComparison.OrdinalIgnoreCase) ?? false)
+        || (r.Body is { } body && body.Contains("<!-- android -->") && !body.Contains("<!-- windows -->"));
 
     private readonly Config? _config = config;
     private readonly Func<bool, string, Task>? _updateFunc = updateFunc;
@@ -181,7 +191,10 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
     {
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo(type);
         var tagName = string.Empty;
-        if (preRelease || coreInfo?.LockedMaxVersion != null)
+        // Saila: its own app always reads the release list, so Android-only releases can be skipped;
+        // GitHub's "latest" may be one of them.
+        var isSaila = type == ECoreType.v2rayN;
+        if (preRelease || coreInfo?.LockedMaxVersion != null || isSaila)
         {
             var url = coreInfo?.ReleaseApiUrl;
             var gitHubReleases = ParseApiReleases(await downloadHandle.TryDownloadString(url, blProxy, Global.AppName, cancellationToken));
@@ -192,12 +205,22 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
             {
                 gitHubReleases = ParseApiReleases(await downloadHandle.TryDownloadString(url, false, Global.AppName, cancellationToken));
             }
-            if (gitHubReleases.Count == 0 && preRelease && coreInfo?.Url is { } releasesUrl)
+            if (gitHubReleases.Count == 0 && (preRelease || isSaila) && coreInfo?.Url is { } releasesUrl)
             {
                 gitHubReleases = ParseAtomReleases(await downloadHandle.TryDownloadString($"{releasesUrl.TrimEnd('/')}.atom", blProxy, Global.AppName, cancellationToken));
+                // The feed can't tell pre-releases: when they are not wanted, stay at or below GitHub's latest.
+                if (!preRelease && gitHubReleases.Count > 0)
+                {
+                    var latestTag = (await downloadHandle.UrlRedirectAsync(Path.Combine(releasesUrl, "latest"), blProxy, cancellationToken))?.Split("/tag/").LastOrDefault();
+                    if (latestTag.IsNotEmpty())
+                    {
+                        var latest = new SemanticVersion(latestTag);
+                        gitHubReleases = gitHubReleases.Where(r => new SemanticVersion(r.TagName) <= latest).ToList();
+                    }
+                }
             }
 
-            var gitHubRelease = PickRelease(gitHubReleases, preRelease);
+            var gitHubRelease = PickRelease(gitHubReleases, preRelease, skipAndroidOnly: isSaila);
             tagName = gitHubRelease?.TagName;
             //var body = gitHubRelease?.Body;
 
@@ -247,17 +270,21 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
         return (JsonUtils.Deserialize<List<GitHubRelease>>(json) ?? []).Where(r => r.TagName.IsNotEmpty()).ToList();
     }
 
-    /// <summary>Saila: release tags from GitHub's releases.atom feed.</summary>
+    /// <summary>Saila: release tags and titles from GitHub's releases.atom feed.</summary>
     public static List<GitHubRelease> ParseAtomReleases(string? atom)
     {
         if (atom.IsNullOrEmpty())
         {
             return [];
         }
-        return Regex.Matches(atom, @"/releases/tag/([^""<\s]+)")
-            .Select(m => m.Groups[1].Value)
-            .Distinct()
-            .Select(tag => new GitHubRelease { TagName = tag })
+        return Regex.Matches(atom, @"<entry>(.*?)</entry>", RegexOptions.Singleline)
+            .Select(e => new GitHubRelease
+            {
+                TagName = Regex.Match(e.Groups[1].Value, @"/releases/tag/([^""<\s]+)").Groups[1].Value,
+                Name = WebUtility.HtmlDecode(Regex.Match(e.Groups[1].Value, @"<title>(.*?)</title>", RegexOptions.Singleline).Groups[1].Value),
+            })
+            .Where(r => r.TagName.IsNotEmpty())
+            .DistinctBy(r => r.TagName)
             .ToList();
     }
 
